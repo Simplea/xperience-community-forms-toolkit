@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <Company>Kentico Software</Company>
+    <Company>Simplea</Company>
     <Authors>$(Company)</Authors>
     <Copyright>Copyright © $(Company) $([System.DateTime]::Now.Year)</Copyright>
     <Trademark>$(Company)™</Trademark>
@@ -9,11 +9,11 @@
     <VersionSuffix>prerelease-1</VersionSuffix>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
-    <PackageProjectUrl>https://github.com/Kentico/REPOSITORY_NAME</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/Kentico/REPOSITORY_NAME/releases</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/Simplea/xperience-by-kentico-forms-toolkit</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/Simplea/xperience-by-kentico-forms-toolkit/releases</PackageReleaseNotes>
     <PackageIcon>logo.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>xperience;kentico;aspnetcore</PackageTags>
+    <PackageTags>xperience;kentico;forms;simplea;aspnetcore</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,7 +30,7 @@
     <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
     <CopyDebugSymbolFilesFromPackages>true</CopyDebugSymbolFilesFromPackages>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <RootNamespace>Kentico.Xperience.RepoTemplate</RootNamespace>
+    <RootNamespace>Simplea.Xperience.Forms.Toolkit</RootNamespace>
 
     <!-- Set to false to manually control embedded assets in the assembly -->
     <!-- This can impact things like embedded localization .resx files -->

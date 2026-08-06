@@ -1,9 +1,5 @@
 # Contributing Setup
 
----This documents the steps a maintainer or developer would follow to work on the library in their development environment---
-
----Update the details for this project, replacing "repotemplate" and anything else that needs changed---
-
 ## Required Software
 
 The requirements to setup, develop, and build this project are listed below.
@@ -14,12 +10,6 @@ The requirements to setup, develop, and build this project are listed below.
 
 - <https://dotnet.microsoft.com/en-us/download/dotnet/10.0>
 - See `global.json` file for specific SDK requirements
-
-### Node.js Runtime
-
-- [Node.js](https://nodejs.org/en/download) v24 or newer
-- [NVM for Windows](https://github.com/coreybutler/nvm-windows) to manage multiple installed versions of Node.js
-- See `engines` in the solution `package.json` for specific version requirements
 
 ### C# Editor
 
@@ -47,19 +37,6 @@ Running the sample project requires creating a new Xperience by Kentico database
 Change directory in your console to `./examples/DancingGoat` and follow the instructions in the Xperience
 documentation on [creating a new database](https://docs.kentico.com/documentation/developers-and-admins/installation#create-the-project-database).
 
-### Admin Customization
-
-To run the Sample app Admin customization in development mode, add the following to your [User Secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-10.0&tabs=windows#secret-manager) for the application.
-
-```json
-"CMSAdminClientModuleSettings": {
-  "kentico-xperience-integrations-repotemplate": {
-    "Mode": "Proxy",
-    "Port": 3009
-  }
-}
-```
-
 ## Development Workflow
 
 1. Create a new branch with one of the following prefixes
@@ -67,7 +44,7 @@ To run the Sample app Admin customization in development mode, add the following
    - `refactor/` - for restructuring of existing features
    - `fix/` - for bugfixes
 
-1. Run `dotnet format` against the `Kentico.Xperience.RepoTemplate` solution
+1. Run `dotnet format` against the `Simplea.Xperience.Forms.Toolkit` solution
 
    > use `dotnet: format` VS Code task.
 

@@ -31,11 +31,11 @@
     "editor.defaultFormatter": "ms-dotnettools.csharp"
   },
 
-  "dotnet.defaultSolution": "Kentico.Xperience.RepoTemplate.slnx",
-  "dotnet.solution.autoOpen": "Kentico.Xperience.RepoTemplate.slnx",
+  "dotnet.defaultSolution": "Simplea.Xperience.Forms.Toolkit.slnx",
+  "dotnet.solution.autoOpen": "Simplea.Xperience.Forms.Toolkit.slnx",
 
   "eslint.workingDirectories": [
-    "./src/Kentico.Xperience.RepoTemplate.Admin/Client"
+    "./src/Simplea.Xperience.Forms.Toolkit.Admin/Client"
   ],
 
   "files.associations": {

@@ -1,3 +1,8 @@
 # Usage Guide
 
----The *Usage-Guide.md* file contains full information required to install, set up, and use the library. Organize the file into multiple sections using Markdown headings. If the materials are extensive, separate them into multiple files, with *Usage-Guide.md* acting as an overview with links.---
+Forms Toolkit is under active development. Installation and configuration instructions will be added with the first functional release.
+
+Planned capabilities include:
+
+- Cloning form definitions without copying submitted data.
+- Exporting form submissions in a portable format.
