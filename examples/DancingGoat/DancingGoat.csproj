@@ -26,10 +26,10 @@
     <ProjectReference Include="..\..\src\XperienceCommunity.FormsToolkit\XperienceCommunity.FormsToolkit.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="kentico.xperience.admin" Condition="'$(SeparatedAdmin)' == 'false'" />
-    <PackageReference Include="kentico.xperience.azurestorage" />
-    <PackageReference Include="kentico.xperience.imageprocessing" />
-    <PackageReference Include="kentico.xperience.mjml" />
-    <PackageReference Include="kentico.xperience.webapp" />
+    <PackageReference Include="kentico.xperience.admin" VersionOverride="$(XperienceLatestVersion)" Condition="'$(SeparatedAdmin)' == 'false'" />
+    <PackageReference Include="kentico.xperience.azurestorage" VersionOverride="$(XperienceLatestVersion)" />
+    <PackageReference Include="kentico.xperience.imageprocessing" VersionOverride="$(XperienceLatestVersion)" />
+    <PackageReference Include="kentico.xperience.mjml" VersionOverride="$(XperienceLatestVersion)" />
+    <PackageReference Include="kentico.xperience.webapp" VersionOverride="$(XperienceLatestVersion)" />
   </ItemGroup>
 </Project>

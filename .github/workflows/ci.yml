@@ -22,10 +22,68 @@ jobs:
       - name: Run dotnet format
         run: dotnet format XperienceCommunity.FormsToolkit.slnx --exclude ./examples/** --verify-no-changes
 
-  build_and_test:
-    name: Build and Test
+  minimum_compatibility:
+    name: Minimum Xperience Compatibility
     runs-on: ubuntu-latest
     needs: dotnet-format
+    defaults:
+      run:
+        shell: pwsh
+
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_NOLOGO: 1
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/XperienceCommunity.FormsToolkit/Client/package-lock.json
+
+      - name: Build administration client against the minimum version
+        working-directory: src/XperienceCommunity.FormsToolkit/Client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify generated client assets
+        run: git diff --exit-code -- src/XperienceCommunity.FormsToolkit/Client/dist
+
+      - name: Restore minimum-version projects
+        run: >-
+          dotnet restore
+          tests/XperienceCommunity.FormsToolkit.Tests/XperienceCommunity.FormsToolkit.Tests.csproj
+          --locked-mode
+
+      - name: Build minimum-version projects
+        run: >-
+          dotnet build
+          tests/XperienceCommunity.FormsToolkit.Tests/XperienceCommunity.FormsToolkit.Tests.csproj
+          --configuration Release
+          --no-restore
+
+      - name: Test minimum-version projects
+        run: >-
+          dotnet test
+          tests/XperienceCommunity.FormsToolkit.Tests/XperienceCommunity.FormsToolkit.Tests.csproj
+          --configuration Release
+          --no-build
+          --no-restore
+
+  latest_integration:
+    name: Latest Xperience Integration
+    runs-on: ubuntu-latest
+    needs: minimum_compatibility
     defaults:
       run:
         shell: pwsh
