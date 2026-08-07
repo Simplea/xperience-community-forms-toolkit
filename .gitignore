@@ -16,6 +16,11 @@
 *.DotSettings.user
 *.sln.docstates
 .vs
+.codex/
+
+# Local Xperience license files
+/[Ll]icense.txt
+/[Ll]icense.xml
 
 # Build results
 
@@ -135,6 +140,8 @@ segments_2i
 
 # Generated files
 **/Client/dist/*
+!src/XperienceCommunity.FormsToolkit/Client/dist/
+!src/XperienceCommunity.FormsToolkit/Client/dist/**
 
 **/CMSModules/WebFarm/*
 

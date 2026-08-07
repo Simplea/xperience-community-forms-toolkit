@@ -44,7 +44,7 @@ documentation on [creating a new database](https://docs.kentico.com/documentatio
    - `refactor/` - for restructuring of existing features
    - `fix/` - for bugfixes
 
-1. Run `dotnet format` against the `Simplea.Xperience.Forms.Toolkit` solution
+1. Run `dotnet format` against the `XperienceCommunity.FormsToolkit` solution
 
    > use `dotnet: format` VS Code task.
 

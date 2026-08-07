@@ -31,11 +31,11 @@
     "editor.defaultFormatter": "ms-dotnettools.csharp"
   },
 
-  "dotnet.defaultSolution": "Simplea.Xperience.Forms.Toolkit.slnx",
-  "dotnet.solution.autoOpen": "Simplea.Xperience.Forms.Toolkit.slnx",
+  "dotnet.defaultSolution": "XperienceCommunity.FormsToolkit.slnx",
+  "dotnet.solution.autoOpen": "XperienceCommunity.FormsToolkit.slnx",
 
   "eslint.workingDirectories": [
-    "./src/Simplea.Xperience.Forms.Toolkit.Admin/Client"
+    "./src/XperienceCommunity.FormsToolkit/Client"
   ],
 
   "files.associations": {
