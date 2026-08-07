@@ -6,7 +6,7 @@
     <Copyright>Copyright © 2026 SimpleA and Andres Villenas</Copyright>
     <Trademark>$(Company)™</Trademark>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>beta.1</VersionSuffix>
+    <VersionSuffix>beta.2</VersionSuffix>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 

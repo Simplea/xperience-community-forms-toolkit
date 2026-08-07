@@ -1,16 +1,18 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
+    <CentralPackageVersionOverrideEnabled>true</CentralPackageVersionOverrideEnabled>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <XperienceMinimumVersion>30.11.0</XperienceMinimumVersion>
+    <XperienceLatestVersion>31.7.2</XperienceLatestVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Kentico.Xperience.Admin" Version="31.2.1" />
-    <PackageVersion Include="Kentico.Xperience.WebApp" Version="31.2.1" />
-    <PackageVersion Include="kentico.xperience.azurestorage" Version="31.2.1" />
-    <PackageVersion Include="kentico.xperience.imageprocessing" Version="31.2.1" />
-    <PackageVersion Include="kentico.xperience.mjml" Version="31.2.1" />
+    <PackageVersion Include="Kentico.Xperience.Admin" Version="$(XperienceMinimumVersion)" />
+    <PackageVersion Include="Kentico.Xperience.WebApp" Version="$(XperienceMinimumVersion)" />
+    <PackageVersion Include="kentico.xperience.azurestorage" Version="$(XperienceMinimumVersion)" />
+    <PackageVersion Include="kentico.xperience.imageprocessing" Version="$(XperienceMinimumVersion)" />
+    <PackageVersion Include="kentico.xperience.mjml" Version="$(XperienceMinimumVersion)" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
     <PackageVersion Include="NUnit" Version="4.3.2" />

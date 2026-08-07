@@ -18,7 +18,11 @@ behavior may change before the first stable release.
 
 | Xperience Version | Library Version |
 | ----------------- | --------------- |
-| 31.2.1            | 1.0.0-beta.1    |
+| 30.11.0 or newer  | 1.0.0-beta.2    |
+
+The package is build-verified through 31.7.2 and runtime smoke-tested on 31.1.2.
+Newer releases may work but require compatibility validation. See the
+[compatibility policy](./docs/Compatibility.md).
 
 ### Dependencies
 
@@ -30,7 +34,7 @@ behavior may change before the first stable release.
 Add the package to your application using the .NET CLI:
 
 ```powershell
-dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.1
+dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.2
 ```
 
 Register the toolkit and its packaged administration extension:
