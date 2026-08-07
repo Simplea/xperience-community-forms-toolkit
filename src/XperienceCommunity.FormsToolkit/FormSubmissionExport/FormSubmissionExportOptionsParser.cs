@@ -22,7 +22,7 @@ public static class FormSubmissionExportOptionsParser
 
         char delimiter = ParseDelimiter(request.Delimiter, format);
         bool includeHeader = format != FormSubmissionExportFormat.Xml && (request.IncludeHeader ?? true);
-        IReadOnlyList<string> columns = ParseColumns(request.Columns, availableFields);
+        var columns = ParseColumns(request.Columns, availableFields);
 
         return new FormSubmissionExportOptions(
             format,
@@ -123,7 +123,7 @@ public static class FormSubmissionExportOptionsParser
         IReadOnlyList<string>? requestedColumns,
         IReadOnlyList<FormSubmissionExportField> availableFields)
     {
-        IReadOnlyList<string> columns = requestedColumns ?? availableFields.Select(field => field.Identifier).ToList();
+        var columns = requestedColumns ?? availableFields.Select(field => field.Identifier).ToList();
         if (columns.Count == 0)
         {
             throw new FormSubmissionExportValidationException("Select at least one column to export.");

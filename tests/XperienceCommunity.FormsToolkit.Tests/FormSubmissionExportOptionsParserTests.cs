@@ -4,7 +4,7 @@ namespace XperienceCommunity.FormsToolkit.Tests;
 
 public class FormSubmissionExportOptionsParserTests
 {
-    private static readonly IReadOnlyList<FormSubmissionExportField> Fields =
+    private static readonly IReadOnlyList<FormSubmissionExportField> fields =
     [
         new(FormSubmissionExportFieldIdentifiers.SubmissionId, "ContactUsID", "Submission ID", false, FormSubmissionExportFieldKind.SubmissionId),
         new(FormSubmissionExportFieldIdentifiers.Submitted, "FormInserted", "Submitted", false, FormSubmissionExportFieldKind.Submitted),
@@ -54,7 +54,7 @@ public class FormSubmissionExportOptionsParserTests
         string operationName = (operation ?? FormSubmissionExportOperation.Export).ToString();
         var result = FormSubmissionExportOptionsParser.Parse(
             CreateRequest(operation: operationName, numberOfRecords: requested),
-            Fields);
+            fields);
 
         Assert.That(result.EffectiveMaximumRecords, Is.EqualTo(expected));
     }
@@ -66,28 +66,26 @@ public class FormSubmissionExportOptionsParserTests
     [TestCase("invalid")]
     public void RejectsInvalidRecordLimits(string value) =>
         Assert.Throws<FormSubmissionExportValidationException>(() =>
-            FormSubmissionExportOptionsParser.Parse(CreateRequest(numberOfRecords: value), Fields));
+            FormSubmissionExportOptionsParser.Parse(CreateRequest(numberOfRecords: value), fields));
 
     [Test]
-    public void RejectsUnknownOrDuplicateColumns()
-    {
+    public void RejectsUnknownOrDuplicateColumns() =>
         Assert.Multiple(() =>
         {
             Assert.Throws<FormSubmissionExportValidationException>(() =>
-                FormSubmissionExportOptionsParser.Parse(CreateRequest(columns: ["Unknown"]), Fields));
+                FormSubmissionExportOptionsParser.Parse(CreateRequest(columns: ["Unknown"]), fields));
             Assert.Throws<FormSubmissionExportValidationException>(() =>
-                FormSubmissionExportOptionsParser.Parse(CreateRequest(columns: ["Name", "Name"]), Fields));
+                FormSubmissionExportOptionsParser.Parse(CreateRequest(columns: ["Name", "Name"]), fields));
             Assert.Throws<FormSubmissionExportValidationException>(() =>
-                FormSubmissionExportOptionsParser.Parse(CreateRequest(columns: []), Fields));
+                FormSubmissionExportOptionsParser.Parse(CreateRequest(columns: []), fields));
         });
-    }
 
     [Test]
     public void XmlIgnoresHeaderAndCsvDelimiterOptions()
     {
         var result = FormSubmissionExportOptionsParser.Parse(
             CreateRequest(format: "xml", includeHeader: true, delimiter: "invalid"),
-            Fields);
+            fields);
 
         Assert.Multiple(() =>
         {

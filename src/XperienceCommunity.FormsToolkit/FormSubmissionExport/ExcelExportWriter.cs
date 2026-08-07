@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using System.Xml;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -194,8 +195,7 @@ internal sealed class ExcelExportWriter : IFormSubmissionExportWriter
             await sheetWriter.WriteEndElementAsync();
         }
 
-        private async Task WriteContentTypesAsync(CancellationToken cancellationToken)
-        {
+        private async Task WriteContentTypesAsync(CancellationToken cancellationToken) =>
             await WriteEntryAsync("[Content_Types].xml", async writer =>
             {
                 await writer.WriteStartElementAsync(null, "Types", ContentTypesNamespace);
@@ -209,7 +209,6 @@ internal sealed class ExcelExportWriter : IFormSubmissionExportWriter
 
                 await writer.WriteEndElementAsync();
             }, cancellationToken);
-        }
 
         private Task WriteRootRelationshipsAsync(CancellationToken cancellationToken) => WriteEntryAsync("_rels/.rels", async writer =>
         {
@@ -272,9 +271,9 @@ internal sealed class ExcelExportWriter : IFormSubmissionExportWriter
             params (string Name, string Value)[] attributes)
         {
             await writer.WriteStartElementAsync(null, name, xmlNamespace);
-            foreach (var attribute in attributes)
+            foreach ((string attributeName, string attributeValue) in attributes)
             {
-                await writer.WriteAttributeStringAsync(null, attribute.Name, null, attribute.Value);
+                await writer.WriteAttributeStringAsync(null, attributeName, null, attributeValue);
             }
 
             await writer.WriteEndElementAsync();

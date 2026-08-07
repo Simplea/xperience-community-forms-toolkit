@@ -126,7 +126,7 @@ internal sealed class FormSubmissionExportService(
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        IReadOnlyList<int> submissionIds = request.SubmissionIds
+        var submissionIds = request.SubmissionIds
             ?? throw new FormSubmissionExportValidationException("The current submissions view is invalid.");
         ValidateCurrentViewSubmissionIds(submissionIds);
 
@@ -235,7 +235,7 @@ internal sealed class FormSubmissionExportService(
         int upperSubmissionId,
         IReadOnlyList<int>? currentViewSubmissionIds)
     {
-        IReadOnlyList<FormSubmissionExportField> fields = ResolveSelectedFields(
+        var fields = ResolveSelectedFields(
             definition.Fields,
             options.ColumnIdentifiers);
 
@@ -265,7 +265,7 @@ internal sealed class FormSubmissionExportService(
         var currentViewSubmissionIds = export.CurrentViewSubmissionIds
             ?? throw new InvalidOperationException("Current-view submission identifiers are missing.");
 
-        foreach (var idBatch in currentViewSubmissionIds.Chunk(BatchSize))
+        foreach (int[] idBatch in currentViewSubmissionIds.Chunk(BatchSize))
         {
             cancellationToken.ThrowIfCancellationRequested();
             var result = await BizFormItemProvider.GetItems(export.Definition.FormClassName)

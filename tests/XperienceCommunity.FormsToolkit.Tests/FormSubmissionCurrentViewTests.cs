@@ -7,17 +7,11 @@ public class FormSubmissionCurrentViewTests
     [TestCase(new[] { 0 })]
     [TestCase(new[] { -1 })]
     [TestCase(new[] { 7, 7 })]
-    public void RejectsInvalidOrDuplicateSubmissionIdentifiers(int[] identifiers)
-    {
-        Assert.Throws<FormSubmissionExportValidationException>(
+    public void RejectsInvalidOrDuplicateSubmissionIdentifiers(int[] identifiers) => Assert.Throws<FormSubmissionExportValidationException>(
             () => FormSubmissionExportService.ValidateCurrentViewSubmissionIds(identifiers));
-    }
 
     [Test]
-    public void AllowsAnEmptyCurrentPage()
-    {
-        Assert.DoesNotThrow(() => FormSubmissionExportService.ValidateCurrentViewSubmissionIds([]));
-    }
+    public void AllowsAnEmptyCurrentPage() => Assert.DoesNotThrow(() => FormSubmissionExportService.ValidateCurrentViewSubmissionIds([]));
 
     [Test]
     public void PreservesTheDisplayedColumnOrder()
