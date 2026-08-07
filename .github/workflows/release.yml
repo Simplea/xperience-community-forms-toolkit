@@ -1,0 +1,112 @@
+name: "Release: Publish NuGet package"
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Build, validate, and publish
+    runs-on: ubuntu-latest
+    environment: nuget-release
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_NOLOGO: 1
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag and release commit
+        id: version
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Tag must contain a SemVer version, for example v1.0.0-beta.1."
+            exit 1
+          fi
+
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "Release tags must reference a commit on main."
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/XperienceCommunity.FormsToolkit/Client/package-lock.json
+
+      - name: Build administration client
+        working-directory: src/XperienceCommunity.FormsToolkit/Client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify generated client assets
+        run: git diff --exit-code -- src/XperienceCommunity.FormsToolkit/Client/dist
+
+      - name: Restore dependencies
+        run: dotnet restore XperienceCommunity.FormsToolkit.slnx --locked-mode
+
+      - name: Verify formatting
+        run: dotnet format XperienceCommunity.FormsToolkit.slnx --exclude ./examples/** --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build XperienceCommunity.FormsToolkit.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test XperienceCommunity.FormsToolkit.slnx --configuration Release --no-build --no-restore
+
+      - name: Pack
+        run: >-
+          dotnet pack
+          src/XperienceCommunity.FormsToolkit/XperienceCommunity.FormsToolkit.csproj
+          --configuration Release
+          --no-build
+          --no-restore
+          --output artifacts
+          -p:PackageVersion=${{ steps.version.outputs.version }}
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: XperienceCommunity.FormsToolkit-${{ steps.version.outputs.version }}
+          path: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
+          if-no-files-found: error
+
+      - name: Authenticate to NuGet.org
+        uses: NuGet/login@v1
+        id: nuget
+        with:
+          user: andresvillenas
+
+      - name: Publish to NuGet.org
+        shell: bash
+        run: |
+          dotnet nuget push \
+            "artifacts/XperienceCommunity.FormsToolkit.${{ steps.version.outputs.version }}.nupkg" \
+            --api-key "${{ steps.nuget.outputs.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json

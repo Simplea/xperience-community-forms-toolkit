@@ -31,7 +31,7 @@ stages:
             value: true
 
           - name: slnPath
-            value: src/Simplea.Xperience.Forms.Toolkit.Libs.slnx
+            value: src/XperienceCommunity.FormsToolkit.Libs.slnx
 
         steps:
           - task: UseDotNet@2
@@ -78,8 +78,8 @@ stages:
               Configuration: $(Configuration)
               artifacts:
                 - Core:
-                  artifactName: "Simplea.Xperience.Forms.Toolkit"
-                  projectPath: "src/Simplea.Xperience.Forms.Toolkit"
+                  artifactName: "XperienceCommunity.FormsToolkit"
+                  projectPath: "src/XperienceCommunity.FormsToolkit"
 
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
       - stage: PublishNuGetPackages

@@ -1,41 +1,43 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+about: Report a reproducible Forms Toolkit problem
+title: "[Bug]: "
+labels: "bug"
+assignees: ""
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Before submitting
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Do not attach real form submissions, uploaded files, credentials, connection
+strings, or other personal or customer data. Sanitize screenshots, logs, and sample
+exports before sharing them.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+For suspected vulnerabilities, do not create a public issue. Follow
+[SECURITY.md](../../SECURITY.md).
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+## Description
 
-**Library Version**
-The full version of the library or integration you experienced the issue with [e.g. 3.2.2]
+Describe the problem and its impact.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+## Environment
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+- Forms Toolkit version:
+- Xperience by Kentico version:
+- .NET version:
+- Browser and version, if the administration UI is affected:
+- Export format, if applicable: CSV / Excel / XML
 
-**Additional context**
-Add any other context about the problem here.
+## Reproduction steps
+
+1.
+2.
+3.
+
+## Expected behavior
+
+Describe what you expected to happen.
+
+## Additional context
+
+Add sanitized logs, screenshots, or a minimal reproduction when useful.

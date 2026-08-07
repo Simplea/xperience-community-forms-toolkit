@@ -1,12 +1,16 @@
 # Forms Toolkit for Xperience by Kentico
 
-[![CI: Build and Test](https://github.com/Simplea/xperience-by-kentico-forms-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/Simplea/xperience-by-kentico-forms-toolkit/actions/workflows/ci.yml)
+[![CI: Build and Test](https://github.com/Simplea/xperience-community-forms-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/Simplea/xperience-community-forms-toolkit/actions/workflows/ci.yml)
 
 ## Description
 
-Forms Toolkit is a Simplea-maintained collection of extensions for working with forms in Xperience by Kentico. The initial roadmap includes cloning form definitions and exporting form submissions.
+Xperience Community Forms Toolkit is an open-source collection of practical form
+extensions for Xperience by Kentico. Its first feature provides secure CSV, Excel,
+and XML exports for form submissions. Additional utilities, including form cloning,
+are planned.
 
-The project is under active development. APIs and behavior may change before the first stable release.
+The project is developed and maintained by Andres Villenas at SimpleA. APIs and
+behavior may change before the first stable release.
 
 ## Requirements
 
@@ -14,7 +18,7 @@ The project is under active development. APIs and behavior may change before the
 
 | Xperience Version | Library Version |
 | ----------------- | --------------- |
-| >= 31.2.0         | 1.0.0           |
+| 31.2.1            | 1.0.0-beta.1    |
 
 ### Dependencies
 
@@ -26,8 +30,19 @@ The project is under active development. APIs and behavior may change before the
 Add the package to your application using the .NET CLI:
 
 ```powershell
-dotnet add package Simplea.Xperience.Forms.Toolkit
+dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.1
 ```
+
+Register the toolkit and its packaged administration extension:
+
+```csharp
+builder.Services.AddFormsToolkit();
+// Later, while mapping endpoints:
+app.MapControllers();
+```
+
+Grant the **Export form submissions** permission to the appropriate administration
+roles, then find the action under **Forms -> selected form -> Submissions**.
 
 ## Full Instructions
 
@@ -35,14 +50,20 @@ View the [Usage Guide](./docs/Usage-Guide.md) for detailed instructions as featu
 
 ## Contributing
 
-Instructions for contributing to this project are available in [Contributing Setup](./docs/Contributing-Setup.md).
+Instructions for contributing to this project are available in
+[CONTRIBUTING.md](./CONTRIBUTING.md).
+
+Maintainers can find the versioning and publishing procedure in the
+[Release Process](./docs/Release-Process.md).
 
 ## License
 
-Distributed under the MIT License. See [`LICENSE.md`](./LICENSE.md) for more information.
+Distributed under the MIT License. See [`LICENSE.md`](./LICENSE.md) and
+[`THIRD-PARTY-NOTICES.md`](./THIRD-PARTY-NOTICES.md) for more information.
 
 ## Support
 
-This project is maintained by Simplea and is not an official Kentico product. It is not covered by Kentico product support.
+This project is maintained by Andres Villenas and SimpleA. It is not an official
+Kentico product and is not covered by Kentico product support.
 
-Report problems through the repository's [GitHub issues](https://github.com/Simplea/xperience-by-kentico-forms-toolkit/issues).
+Report problems through the repository's [GitHub issues](https://github.com/Simplea/xperience-community-forms-toolkit/issues).

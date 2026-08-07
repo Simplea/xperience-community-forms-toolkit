@@ -20,7 +20,7 @@ jobs:
           global-json-file: global.json
 
       - name: Run dotnet format
-        run: dotnet format Simplea.Xperience.Forms.Toolkit.slnx --exclude ./examples/** --verify-no-changes
+        run: dotnet format XperienceCommunity.FormsToolkit.slnx --exclude ./examples/** --verify-no-changes
 
   build_and_test:
     name: Build and Test

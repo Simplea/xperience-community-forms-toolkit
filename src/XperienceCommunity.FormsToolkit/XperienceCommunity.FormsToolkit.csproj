@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AdminOrgName>xperience-community</AdminOrgName>
+    <PackageId>XperienceCommunity.FormsToolkit</PackageId>
+    <Title>Forms Toolkit for Xperience by Kentico</Title>
+    <Description>Open-source toolkit of practical form extensions for Xperience by Kentico, including secure CSV, Excel, and XML submission exports.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AdminClientPath Include="Client\dist\**">
+      <ProjectName>forms-toolkit</ProjectName>
+    </AdminClientPath>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Client\node_modules\**" />
+    <EmbeddedResource Remove="Client\node_modules\**" />
+    <None Remove="Client\node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Kentico.Xperience.Admin" />
+  </ItemGroup>
+
+</Project>

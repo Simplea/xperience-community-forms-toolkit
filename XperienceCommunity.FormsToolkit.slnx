@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/XperienceCommunity.FormsToolkit/XperienceCommunity.FormsToolkit.csproj" />
+  </Folder>
+  <Folder Name="/examples/">
+    <Project Path="examples/DancingGoat/DancingGoat.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/XperienceCommunity.FormsToolkit.Tests/XperienceCommunity.FormsToolkit.Tests.csproj" />
+  </Folder>
+</Solution>

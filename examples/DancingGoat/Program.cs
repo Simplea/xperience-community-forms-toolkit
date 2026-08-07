@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -32,6 +32,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Samples.DancingGoat;
+using XperienceCommunity.FormsToolkit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +70,7 @@ builder.Services.AddLocalization()
     });
 
 builder.Services.AddDancingGoatServices();
+builder.Services.AddFormsToolkit();
 builder.Services.AddSingleton<IEmailActivityTrackingEvaluator, EmailActivityTrackingEvaluator>();
 
 ConfigureEmailBuilder(builder.Services);
@@ -99,6 +101,8 @@ app.UseAuthorization();
 app.UseStatusCodePagesWithReExecute("/error/{0}");
 
 app.Kentico().MapRoutes();
+
+app.MapControllers();
 
 app.MapControllerRoute(
    name: "error",
