@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <AdminOrgName>xperience-community</AdminOrgName>
+    <PackageId>XperienceCommunity.FormsToolkit</PackageId>
+    <Title>Forms Toolkit for Xperience by Kentico</Title>
+    <Description>Open-source toolkit of practical form extensions for Xperience by Kentico, including secure CSV, Excel, and XML submission exports.</Description>
   </PropertyGroup>
 
   <ItemGroup>

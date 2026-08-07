@@ -1,20 +1,25 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: ''
-assignees: ''
+about: Suggest a Forms Toolkit extension or improvement
+title: "[Feature]: "
+labels: "enhancement"
+assignees: ""
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+## Problem
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+Describe the form-related workflow or limitation you want to address.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+## Proposed solution
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+Describe the behavior you would like and where it should appear in Xperience.
+
+## Alternatives
+
+Describe any alternatives or workarounds you considered.
+
+## Additional context
+
+Include relevant Xperience versions, extension points, or sanitized screenshots.
+Do not include real submission data or other personal or customer information.

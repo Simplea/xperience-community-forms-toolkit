@@ -2,7 +2,8 @@
 
 ## Requirements
 
-- Xperience by Kentico 31.2.1 or a compatible 31.x release.
+- Xperience by Kentico 31.2.1. Later 31.x releases may work but are not yet part
+  of the verified compatibility baseline.
 - ASP.NET Core 8.0.
 - The administration application must be included in the deployment that hosts
   the export endpoint.
@@ -12,7 +13,7 @@
 Install the toolkit package in the Xperience application:
 
 ```powershell
-dotnet add package XperienceCommunity.FormsToolkit
+dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.1
 ```
 
 Register the toolkit after registering Xperience services:

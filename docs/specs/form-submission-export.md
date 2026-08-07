@@ -1,6 +1,6 @@
 # Feature specification: Form submission export
 
-Status: Draft for review  
+Status: Implemented; prerelease validation in progress
 Repository: `Simplea/xperience-community-forms-toolkit`  
 Target baseline: Xperience by Kentico `31.2.1`, .NET 8
 

@@ -1,12 +1,13 @@
 <Project>
 
   <PropertyGroup>
-    <Company>Simplea</Company>
-    <Authors>$(Company)</Authors>
-    <Copyright>Copyright © $(Company) $([System.DateTime]::Now.Year)</Copyright>
+    <Company>SimpleA</Company>
+    <Authors>SimpleA;Andres Villenas</Authors>
+    <Copyright>Copyright © 2026 SimpleA and Andres Villenas</Copyright>
     <Trademark>$(Company)™</Trademark>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>prerelease-1</VersionSuffix>
+    <VersionSuffix>beta.1</VersionSuffix>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <PackageProjectUrl>https://github.com/Simplea/xperience-community-forms-toolkit</PackageProjectUrl>
@@ -14,11 +15,15 @@
     <PackageIcon>logo.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>xperience;kentico;forms;xperience-community;aspnetcore</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Simplea/xperience-community-forms-toolkit.git</RepositoryUrl>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\images\logo.png" Pack="true" Visible="false" PackagePath="" />
     <None Include="$(MSBuildThisFileDirectory)\README.md" Pack="true" PackagePath=""/>
+    <None Include="$(MSBuildThisFileDirectory)\THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <PropertyGroup>

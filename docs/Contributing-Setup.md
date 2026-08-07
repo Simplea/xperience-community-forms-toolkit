@@ -1,62 +1,91 @@
-# Contributing Setup
+# Contributing setup
 
-## Required Software
+This guide covers the local environment required to build Forms Toolkit and run
+the Dancing Goat integration host. See the repository-level
+[CONTRIBUTING.md](../CONTRIBUTING.md) for the contribution workflow and pull request
+requirements.
 
-The requirements to setup, develop, and build this project are listed below.
+## Required software
 
-### .NET Runtime
+### .NET SDK
 
-.NET SDK 10.0 or newer
+Install the .NET SDK version specified by the repository's `global.json` file:
 
-- <https://dotnet.microsoft.com/en-us/download/dotnet/10.0>
-- See `global.json` file for specific SDK requirements
+- <https://dotnet.microsoft.com/download>
 
-### C# Editor
+### C# development environment
 
-- VS Code/VS
-- Cursor
-- Rider
+Use an editor or IDE with current .NET and C# support, such as:
+
+- Visual Studio Code;
+- Visual Studio;
+- JetBrains Rider; or
+- Cursor.
+
+### Node.js
+
+Node.js and npm are required only when modifying the embedded Xperience
+administration client. The release workflow currently validates the client using
+Node.js 22.
 
 ### Database
 
-SQL Server 2019 or newer compatible database
+Runtime verification uses SQL Server 2019 or newer and the Dancing Goat sample
+under `examples/DancingGoat`.
 
-- [SQL Server Linux](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-setup?view=sql-server-ver15)
+- [SQL Server on Linux](https://learn.microsoft.com/sql/linux/sql-server-linux-setup)
+- [SQL Server Management Studio](https://learn.microsoft.com/ssms/install/install)
 
-### SQL Editor
+## Dancing Goat database setup
 
-- VS Code with official [MSSQL extension](https://marketplace.visualstudio.com/items?itemName=ms-mssql.mssql)
-- MS SQL Server Management Studio
+Create a local Xperience by Kentico database for the sample project by following
+the Xperience documentation for
+[creating a project database](https://docs.kentico.com/documentation/developers-and-admins/installation#create-the-project-database).
 
-## Sample Project
+Store `CMSConnectionString` and `CMSHashStringSalt` in .NET user secrets or another
+ignored configuration provider. Never commit these values to the repository.
 
-### Database Setup
+From `examples/DancingGoat`, user secrets can be initialized with:
 
-Running the sample project requires creating a new Xperience by Kentico database using the included template.
+```powershell
+dotnet user-secrets set "ConnectionStrings:CMSConnectionString" "<connection-string>"
+dotnet user-secrets set "CMSHashStringSalt" "<hash-string-salt>"
+```
 
-Change directory in your console to `./examples/DancingGoat` and follow the instructions in the Xperience
-documentation on [creating a new database](https://docs.kentico.com/documentation/developers-and-admins/installation#create-the-project-database).
+Do not use production or customer databases for local development. Do not commit
+form submissions, uploaded files, database backups, or exported data.
 
-## Development Workflow
+## Restore and build
 
-1. Create a new branch with one of the following prefixes
-   - `feat/` - for new functionality
-   - `refactor/` - for restructuring of existing features
-   - `fix/` - for bugfixes
+From the repository root:
 
-1. Run `dotnet format` against the `XperienceCommunity.FormsToolkit` solution
+```powershell
+dotnet restore XperienceCommunity.FormsToolkit.slnx --locked-mode
+dotnet build XperienceCommunity.FormsToolkit.slnx --configuration Release --no-restore
+dotnet test XperienceCommunity.FormsToolkit.slnx --configuration Release --no-build --no-restore
+```
 
-   > use `dotnet: format` VS Code task.
+## Administration client
 
-1. Commit changes, with a commit message preferably following the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) convention.
+When changing files under `src/XperienceCommunity.FormsToolkit/Client/src`, run:
 
-1. Once ready, create a PR on GitHub. The PR will need to have all comments resolved and all tests passing before it will be merged.
-   - The PR should have a helpful description of the scope of changes being contributed.
-   - Include screenshots or video to reflect UX or UI updates
-   - Indicate if new settings need to be applied when the changes are merged - locally or in other environments
+```powershell
+cd src/XperienceCommunity.FormsToolkit/Client
+npm ci
+npm run build
+```
 
-1. This repository is stored with `lf` line endings. If you are developing on Windows you can set your Git config to automatically checkout as `crlf` and commit as `lf`.
+Commit the generated `Client/dist` assets with the source changes. Normal package
+consumers do not need Node.js because the built administration module is embedded
+in the Forms Toolkit assembly.
 
-   ```powershell
-   # git config --global core.autocrlf true
-   ```
+## Run the integration host
+
+After configuring the database and restoring dependencies:
+
+```powershell
+dotnet run --project examples/DancingGoat/DancingGoat.csproj
+```
+
+Open the Xperience administration, grant the Forms Toolkit export permission to a
+test role, and verify the feature under **Forms → selected form → Submissions**.
