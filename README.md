@@ -18,7 +18,7 @@ behavior may change before the first stable release.
 
 | Xperience Version | Library Version |
 | ----------------- | --------------- |
-| 30.11.0 or newer  | 1.0.0-beta.2    |
+| 30.11.0 or newer  | 1.0.0-beta.3    |
 
 The package is build-verified through 31.7.2 and runtime smoke-tested on 31.1.2.
 Newer releases may work but require compatibility validation. See the
@@ -34,7 +34,7 @@ Newer releases may work but require compatibility validation. See the
 Add the package to your application using the .NET CLI:
 
 ```powershell
-dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.2
+dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.3
 ```
 
 Register the toolkit and its packaged administration extension:
@@ -43,6 +43,16 @@ Register the toolkit and its packaged administration extension:
 builder.Services.AddFormsToolkit();
 // Later, while mapping endpoints:
 app.MapControllers();
+```
+
+Form cloning is enabled by default. To hide the **Clone form** action while keeping
+the submission export features enabled, configure the toolkit during registration:
+
+```csharp
+builder.Services.AddFormsToolkit(options =>
+{
+    options.EnableFormCloning = false;
+});
 ```
 
 Grant the **Export form submissions** permission to the appropriate administration
