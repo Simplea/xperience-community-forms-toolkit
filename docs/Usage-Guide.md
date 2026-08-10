@@ -14,7 +14,7 @@
 Install the toolkit package in the Xperience application:
 
 ```powershell
-dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.2
+dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.3
 ```
 
 Register the toolkit after registering Xperience services:
