@@ -18,6 +18,29 @@ another ignored configuration provider.
 
 ## Development workflow
 
+### Branch strategy
+
+Create one short-lived branch for each independent change. Use the existing
+prefixes with an issue number and a short description, for example:
+
+```text
+feat/123-csv-export
+fix/124-empty-submission
+refactor/125-export-service
+docs/126-release-guide
+```
+
+Multiple branches may be active at the same time. Keep unrelated features and
+fixes on separate branches so they can be reviewed, tested, and merged
+independently. If one change depends on another, branches may be temporarily
+stacked; merge the base change first, then rebase or retarget the dependent
+pull request onto `main`.
+
+There is no permanent `develop` or release branch. Pull requests target
+`main`, and several merged changes may be included in the same release. Create
+release tags only from a tested, up-to-date `main`; see the [release process](./docs/Release-Process.md)
+for versioning and publishing steps.
+
 1. Create a branch using an appropriate prefix such as `feat/`, `fix/`, or
    `refactor/`.
 2. Make focused changes and add or update automated tests.
