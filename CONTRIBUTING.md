@@ -69,11 +69,16 @@ Pull requests must pass CI and have all review comments resolved before merge.
 
 ## Line endings
 
-The repository stores text files with LF line endings. Windows contributors may
-configure Git to check out CRLF and commit LF:
+Git normalizes repository text files to LF, and `.gitattributes` explicitly checks
+out C# files with LF so the documented `dotnet format` command behaves consistently
+on Windows and Linux. Contributors do not need to change their global Git line-ending
+configuration.
+
+After pulling a change to `.gitattributes`, refresh a clean working tree before
+running the formatter. Commit or stash local work first, then run:
 
 ```powershell
-git config --global core.autocrlf true
+git checkout-index --force --all
 ```
 
 ## Reporting security issues

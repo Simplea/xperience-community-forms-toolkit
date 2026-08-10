@@ -2,8 +2,7 @@
 
 root = true
 
-# Windows developers can enable autocrlf to checkout in crlf and commit in lf
-# git config --global core.autocrlf true
+# C# checkout line endings are enforced by .gitattributes.
 
 [*.cs]
 end_of_line                                                               = lf

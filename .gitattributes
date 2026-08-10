@@ -1,11 +1,10 @@
 # Auto detect text files and perform LF normalization
 
-# Windows developers can enable autocrlf to checkout in crlf and commit in lf
-# git config --global core.autocrlf true
+# C# files are checked out with LF to match the repository's formatter rules.
 
 *                   text=auto
 
-*.cs                text diff=csharp
+*.cs                text eol=lf diff=csharp
 *.cshtml            text diff=html
 
 *.sln               text
