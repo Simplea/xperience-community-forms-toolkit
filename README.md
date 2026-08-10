@@ -5,9 +5,9 @@
 ## Description
 
 Xperience Community Forms Toolkit is an open-source collection of practical form
-extensions for Xperience by Kentico. Its first feature provides secure CSV, Excel,
-and XML exports for form submissions. Additional utilities, including form cloning,
-are planned.
+extensions for Xperience by Kentico. It provides secure CSV, Excel, and XML exports
+for form submissions and a native administration action for cloning forms without
+copying submissions or runtime integrations.
 
 The project is developed and maintained by Andres Villenas at SimpleA. APIs and
 behavior may change before the first stable release.
@@ -47,6 +47,8 @@ app.MapControllers();
 
 Grant the **Export form submissions** permission to the appropriate administration
 roles, then find the action under **Forms -> selected form -> Submissions**.
+Users with Xperience's Forms Create permission can use **Clone form** from each row
+on the Forms listing.
 
 ## Full Instructions
 

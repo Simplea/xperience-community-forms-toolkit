@@ -4,7 +4,7 @@
     <AdminOrgName>xperience-community</AdminOrgName>
     <PackageId>XperienceCommunity.FormsToolkit</PackageId>
     <Title>Forms Toolkit for Xperience by Kentico</Title>
-    <Description>Open-source toolkit of practical form extensions for Xperience by Kentico, including secure CSV, Excel, and XML submission exports.</Description>
+    <Description>Open-source toolkit of practical form extensions for Xperience by Kentico, including submission exports and form cloning.</Description>
   </PropertyGroup>
 
   <ItemGroup>

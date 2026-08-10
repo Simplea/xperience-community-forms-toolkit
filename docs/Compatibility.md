@@ -33,9 +33,18 @@ Before release, validate the packed NuGet artifact in separate applications usin
 1. the minimum supported Xperience version; and
 2. the latest verified Xperience version.
 
-The administration UI and at least one export in every supported format should be
-smoke-tested because successful compilation alone cannot prove client-side or
-runtime compatibility.
+The administration UI, at least one export in every supported format, and cloning
+a representative form should be smoke-tested because successful compilation alone
+cannot prove client-side or runtime compatibility. The clone check must verify its
+field definition and settings, independent table, zero submissions, and unchanged
+source integrations.
+
+The form-cloning implementation uses only documented public Xperience APIs.
+Cloning behaviors that would require `.Internal` namespaces, reflection over
+non-public members, or copied internal administration components are excluded until
+a public alternative exists. This keeps one toolkit package valid across the
+supported range instead of adding release-specific implementations that can break
+on a refresh.
 
 ## Updating versions
 

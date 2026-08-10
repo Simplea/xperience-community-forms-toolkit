@@ -33,8 +33,12 @@ active export per administrator. The application-wide limit can be adjusted:
 builder.Services.AddFormsToolkit(options =>
 {
     options.MaximumConcurrentExports = 3;
+    options.EnableFormCloning = true;
 });
 ```
+
+Form cloning is enabled by default. Set `EnableFormCloning` to `false` to remove
+the row action without disabling submission exports.
 
 Map attribute-routed controllers in the request pipeline:
 
@@ -105,6 +109,23 @@ filename only.
 Exports are generated incrementally from bounded database batches and downloaded
 through the authenticated response. The toolkit does not create completed export
 files in application or web-accessible storage.
+
+## Clone a form
+
+1. Open **Forms** in the Xperience administration.
+2. Open a form row's actions and select **Clone form**.
+3. Review or change the prefilled form name, then select **Clone**.
+
+The user must have Xperience's Forms Create permission. The clone receives its own
+code name, data class, database table, and primary key. It copies the supported
+form definition, Form Builder layout, contact mapping, general form settings, and
+authorized-role access.
+
+The clone starts with zero submissions. Autoresponders, automation processes,
+notifications, page/widget usage references, and analytics relationships remain
+attached only to the source form. The toolkit intentionally uses only public
+Xperience APIs; autoresponder cloning will remain unavailable until Kentico exposes
+a supported public API for reading that configuration.
 
 ## Client development
 
