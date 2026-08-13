@@ -265,7 +265,7 @@ export const FormSubmissionExportComponent = ({
   };
 
   const quickExport = async (requestedFormat: ExportFormat) => {
-    const label = `Export to ${formatLabels[requestedFormat]}`;
+    const label = `Export Page to ${formatLabels[requestedFormat]}`;
     setPendingLabel(label);
     setInProgress(true);
 
@@ -380,7 +380,7 @@ export const FormSubmissionExportComponent = ({
         )}
       >
         {(["csv", "excel", "xml"] as const).map((quickFormat) => {
-          const label = `Export to ${formatLabels[quickFormat]}`;
+          const label = `Export Page to ${formatLabels[quickFormat]}`;
           return (
             <MenuItem
               key={quickFormat}

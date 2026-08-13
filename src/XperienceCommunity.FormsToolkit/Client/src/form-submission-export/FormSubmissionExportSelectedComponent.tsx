@@ -1,6 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import { ActionComponentProps } from "@kentico/xperience-admin-base";
-import { SnackbarItemVariant, useSnackbar } from "@kentico/xperience-admin-components";
+import {
+  Dialog,
+  MenuItem,
+  NotificationBarAlert,
+  Select,
+  SnackbarItemVariant,
+  useSnackbar,
+} from "@kentico/xperience-admin-components";
 
 import {
   downloadResponse,
@@ -9,6 +16,7 @@ import {
   readProblemDetail,
   useXperienceAntiForgery,
 } from "./FormSubmissionExportComponent";
+import type { ExportFormat } from "./FormSubmissionExportComponent";
 
 interface ComponentData {
   readonly currentViewDownloadUrl: string;
@@ -19,6 +27,12 @@ type FormSubmissionExportSelectedComponentProps = Omit<
   ActionComponentProps,
   "componentData"
 > & ComponentData;
+
+const formatLabels: Record<ExportFormat, string> = {
+  csv: "CSV",
+  excel: "Excel",
+  xml: "XML",
+};
 
 const captureSelectedSubmissionIds = (): number[] => {
   const table = document.querySelector<HTMLElement>('[data-testid="table"][role="table"]');
@@ -44,41 +58,65 @@ export const FormSubmissionExportSelectedComponent = ({
   columns,
   unloadComponent,
 }: FormSubmissionExportSelectedComponentProps) => {
-  const ran = useRef(false);
+  const [format, setFormat] = useState<ExportFormat>("csv");
+  const [inProgress, setInProgress] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { addMessage } = useSnackbar();
   const { getXsrfHeader } = useXperienceAntiForgery();
 
-  useEffect(() => {
-    if (ran.current) {
-      return;
-    }
-    ran.current = true;
+  const submit = async () => {
+    setError(null);
+    setInProgress(true);
 
-    (async () => {
-      try {
-        const submissionIds = captureSelectedSubmissionIds();
-        const response = await fetch(currentViewDownloadUrl, {
-          method: "POST",
-          credentials: "same-origin",
-          headers: getAntiforgeryHeaders(getXsrfHeader()),
-          body: JSON.stringify({ format: "csv", submissionIds, columns }),
-        });
-        if (!response.ok) {
-          throw new Error(await readProblemDetail(response));
-        }
-
-        await downloadResponse(response, "csv");
-      } catch (caught) {
-        addMessage({
-          message: caught instanceof Error ? caught.message : "The export could not be prepared.",
-          variant: SnackbarItemVariant.Error,
-          autoHide: true,
-        });
-      } finally {
-        unloadComponent();
+    try {
+      const submissionIds = captureSelectedSubmissionIds();
+      const response = await fetch(currentViewDownloadUrl, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: getAntiforgeryHeaders(getXsrfHeader()),
+        body: JSON.stringify({ format, submissionIds, columns }),
+      });
+      if (!response.ok) {
+        throw new Error(await readProblemDetail(response));
       }
-    })();
-  }, [currentViewDownloadUrl, columns, getXsrfHeader, addMessage, unloadComponent]);
 
-  return null;
+      await downloadResponse(response, format);
+      unloadComponent();
+    } catch (caught) {
+      setInProgress(false);
+      const message = caught instanceof Error ? caught.message : "The export could not be prepared.";
+      setError(message);
+      addMessage({ message, variant: SnackbarItemVariant.Error, autoHide: true });
+    }
+  };
+
+  return (
+    <Dialog
+      isOpen
+      headline="Export selected"
+      onClose={unloadComponent}
+      headerCloseButton={{ tooltipText: "Close" }}
+      isDismissable={!inProgress}
+      actionInProgress={inProgress}
+      width="min(480px, calc(100vw - 48px))"
+      confirmAction={{
+        label: "Export",
+        onClick: submit,
+        inProgress,
+        disabled: inProgress,
+      }}
+      cancelAction={{ label: "Cancel", onClick: unloadComponent, disabled: inProgress }}
+      notificationBar={error ? <NotificationBarAlert>{error}</NotificationBarAlert> : undefined}
+    >
+      <Select
+        label="Export to"
+        value={format}
+        onChange={(value) => value && setFormat(value as ExportFormat)}
+      >
+        {(["csv", "excel", "xml"] as const).map((option) => (
+          <MenuItem key={option} primaryLabel={formatLabels[option]} value={option} />
+        ))}
+      </Select>
+    </Dialog>
+  );
 };
