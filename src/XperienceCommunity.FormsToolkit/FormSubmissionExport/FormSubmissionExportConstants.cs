@@ -10,4 +10,6 @@ public static class FormSubmissionExportConstants
 
     internal const string ClientComponent = "@xperience-community/forms-toolkit/FormSubmissionExport";
     internal const string CreateTokenCommand = "CreateExportToken";
+
+    internal const string SelectedClientComponent = "@xperience-community/forms-toolkit/FormSubmissionExportSelected";
 }

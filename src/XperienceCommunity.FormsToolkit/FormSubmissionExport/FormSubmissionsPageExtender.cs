@@ -46,6 +46,25 @@ public sealed class FormSubmissionsPageExtender(
                         Icon = Icons.ChevronDown,
                         Title = "Export form submissions",
                     });
+
+                Page.PageConfiguration.MassActions.AddActionWithCustomComponent(
+                    new AddActionWithCustomComponentParameters(
+                        "Export selected",
+                        new FormSubmissionExportSelectedActionComponent
+                        {
+                            Properties = new FormSubmissionExportSelectedActionProperties
+                            {
+                                CurrentViewDownloadUrl = $"{FormSubmissionExportConstants.CurrentViewDownloadRoute}/{Page.FormId}",
+                                Columns = definition.Fields
+                                    .Where(field => field.VisibleInListing)
+                                    .Select(field => field.Identifier)
+                                    .ToList(),
+                            },
+                        })
+                    {
+                        Icon = Icons.ArrowDownLine,
+                        Title = "Export selected submissions",
+                    });
             }
             catch (FormSubmissionExportNotFoundException exception)
             {

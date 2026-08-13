@@ -1,6 +1,8 @@
 # Feature specification: Form submission export
 
-Status: Implemented; prerelease validation in progress
+Status: Implemented; prerelease validation in progress. **Export selected**
+(mass action) is implemented as a purely additive extension that does not
+modify the originally implemented current-view/Advanced export behavior.
 Repository: `Simplea/xperience-community-forms-toolkit`  
 Target baseline: Xperience by Kentico `31.2.1`, .NET 8
 
@@ -59,6 +61,8 @@ Export  v
 
 - CSV appears first as the default/recommended quick format.
 - Selecting CSV, Excel, or XML immediately exports the current listing page.
+  This header action and its behavior are unchanged by **Export selected**
+  below; it always covers the current page, exactly as originally implemented.
 - While a quick export is being prepared, menu actions are disabled and the selected
   action indicates progress.
 - A successful download leaves the submissions page open and closes the menu.
@@ -69,6 +73,75 @@ Export  v
   little value and imply capabilities this integration does not provide.
 - Clicking outside the menu or pressing Escape dismisses it without changing the
   listing.
+
+### Export selected (mass action)
+
+Xperience by Kentico's listing UI page template has a native, publicly
+documented **mass actions** mechanism: `PageConfiguration.MassActions` renders
+a checkbox column and a contextual action toolbar immediately below the search
+bar once the administrator checks at least one row. `FormSubmissionsTab` uses
+the same `InfoObjectListingConfiguration`/listing-template base as Kentico's
+own Recycle Bin and Content Hub pages, which already ship mass actions built
+the same way. Implementing this feature confirmed both that the checkbox
+column and toolbar render correctly on this exact listing, and an important
+distinction the public documentation does not spell out:
+
+- A mass action registered with `AddCommand`/`AddCommandWithConfirmation`
+  (a framework-rendered button with no custom component, the same pattern
+  `RecycleBinList.MassPermanentlyDelete` uses) genuinely does get the checked
+  rows' primary keys auto-bound to an `IEnumerable<int> identifiers` command
+  parameter. This path is real and low-risk for actions whose entire effect is
+  server-side plus a grid refresh.
+- A mass action registered with `AddActionWithCustomComponent` does **not**
+  get this for free. The framework's auto-binding is tied to its own built-in
+  button/click handling; once a custom component owns the click, nothing
+  supplies the selection to it automatically — confirmed by triggering a
+  `System.Text.Json` deserialization failure trying to parse an empty request
+  body directly as `IEnumerable<int> identifiers`.
+
+**Export selected** needs a custom component regardless, because delivering a
+file requires client-side code to react to a response and start a download —
+something a framework-driven button's response handling (grid reload only)
+cannot do, and something no `[PageCommand]` can do directly since it only
+returns JSON. Given that, **Export selected** resolves the selection the same
+way quick export's header action already does: it reads the checked rows
+directly from the rendered listing.
+
+Add one native mass action, **Export selected**, registered independently of
+the existing **Export** header action:
+
+- It appears only when the administrator has checked at least one row, using
+  Xperience's native mass-action checkbox column and toolbar. This toolkit
+  does not build, own, or inject that checkbox column.
+- On click, the client component reads which rows are checked directly from
+  the rendered listing (the checked `input[type="checkbox"]` within each
+  `data-testid="table-row"`, reusing the same accessible-role/`data-testid`
+  capture already specified for quick export's current-page rows) and submits
+  those submission IDs to the existing current-view download endpoint. No new
+  server endpoint or page command is needed for this step.
+- Selecting it exports the checked rows in CSV format, using the same
+  listing-visible field set quick export already uses (`VisibleInListing`
+  fields only — not the full Advanced-export column list, since this reuses
+  the current-view endpoint's existing validation, which enforces that
+  constraint), with headers and a comma delimiter. It does not offer a format
+  choice; administrators who need Excel, XML, or a different column set for a
+  selected set can use Advanced export instead.
+- Because this is non-destructive, it requires no confirmation step, matching
+  the header action's quick exports.
+- The server independently re-validates every submitted ID and column as
+  positive/distinct/belonging to the selected form before reading anything —
+  identical treatment to quick export's current-page request, since it is the
+  same endpoint.
+- The existing **Export** header action, its dropdown, and its current-page
+  scope are completely unchanged by this addition. The two are independent
+  entry points that happen to sit on the same page and share no client code
+  path beyond the row-capture helpers.
+
+**Compatibility.** The native selection UI observed during implementation was
+bounded to the current listing page; no "select all matching" affordance
+spanning pages was present. If a future version adds one, **Export selected**
+would simply read whatever rows are rendered as checked — it does not
+independently constrain the platform's selection UI.
 
 ### Advanced export dialog
 
@@ -146,6 +219,12 @@ names from the rendered listing using its accessible roles and stable
 `data-testid` values. It never copies submitted cell values into the request. The
 server validates the identifiers against the selected form, re-reads those records,
 selects validated metadata-backed fields, and emits records in the supplied order.
+
+**Export selected** (see above) uses a related but distinct DOM read: instead
+of every rendered row, it reads only the rows whose native mass-action
+checkbox is checked, then reuses this same current-view request/response
+contract. The row-identifier and column-identifier resolution, and the
+server-side validation, are identical either way.
 
 The row identifier is obtained from the listing's generated edit-row link. If the
 expected listing structure cannot be read, fail safely with an administration error;
@@ -367,6 +446,11 @@ are mandatory:
 - Treat quick-export row and column identifiers as untrusted. Accept only positive,
   distinct submission IDs and metadata-backed fields belonging to the selected form.
   Never accept submitted cell values from the browser.
+- Apply the same untrusted-identifier validation to **Export selected**: it reuses
+  the current-view download endpoint, so the same server-side re-validation
+  (positive, distinct, belonging to the selected form; listing-visible columns
+  only) and the same export-permission and antiforgery checks already apply
+  without any new code.
 - Give tokens a short lifetime. A Preview token must never produce more than 100
   records or be convertible into an unrestricted export.
 - Re-resolve and validate the form and selected field identifiers at download time.
@@ -415,10 +499,16 @@ are mandatory:
 
 ## Suggested component boundaries
 
-- `FormSubmissionsPageExtender`: permission-gates and places the **Export** action.
+- `FormSubmissionsPageExtender`: permission-gates and places the **Export** action,
+  and registers the **Export selected** mass action on the same page's
+  `PageConfiguration.MassActions`.
 - Administration export component: anchored dropdown menu, current-view identifier
   capture, antiforgery-aware quick requests, Advanced dialog, option validation
-  feedback, and download initiation.
+  feedback, and download initiation. Owns none of the mass-action selection UI,
+  which is native to the platform.
+- **Export selected** client component: reads checked rows from the rendered
+  listing and posts to the existing current-view download endpoint. Adds no new
+  server endpoint or page command.
 - Export-options command: returns validated field metadata and creates protected
   download tokens for Advanced export.
 - Export controller/endpoint: authenticates, authorizes, validates the token, sets
@@ -452,8 +542,11 @@ extension so consuming applications have one documented integration path.
 - safe filenames for quick, advanced, and preview downloads; and
 - protected-token binding for all export options.
 - validation of current-view row identifiers and listing-backed column selections;
-- preservation of the current-view row order; and
-- failure when the current listing structure cannot be captured.
+- preservation of the current-view row order;
+- failure when the current listing structure cannot be captured; and
+- **Export selected**'s checked-row capture and column restriction to
+  listing-visible fields, reusing the current-view request/response contract
+  and its existing validation.
 
 ### Integration and runtime tests
 
@@ -463,6 +556,10 @@ extension so consuming applications have one documented integration path.
   size changes;
 - transition from the dropdown menu to Advanced export;
 - quick-export POST requests using the active Xperience antiforgery header;
+- **Export selected** appearing only once at least one row is checked via the
+  platform's native selection UI, and exporting exactly the checked rows;
+- confirming the existing **Export** header action's behavior, dropdown, and
+  current-page scope are unaffected by the presence of the new mass action;
 - format-dependent Advanced export controls;
 - all combinations of open and closed date ranges;
 - empty, smaller-than-result, and larger-than-result record limits;
@@ -485,6 +582,9 @@ extension so consuming applications have one documented integration path.
 - The action does not include Reset view.
 - Quick exports contain only the current listing page's records and displayed data
   columns, in the current displayed order.
+- An **Export selected** mass action appears using Xperience's native selection UI
+  once at least one row is checked, and exports exactly the checked rows to CSV,
+  independently of the **Export** header action.
 - Advanced export provides format, date range, record maximum, safe ordering,
   conditional header/delimiter controls, column selection, Preview, and Export.
 - Preview produces a real file containing no more than 100 data records.
@@ -507,6 +607,10 @@ extension so consuming applications have one documented integration path.
 - Arbitrary column reordering.
 - Background/scheduled exports, email delivery, or persisted export history.
 - Importing, deleting, or modifying submissions.
+- Building any custom row-selection UI. **Export selected** relies entirely on
+  Xperience's native mass-action selection mechanism.
+- A format choice, Advanced-export-style options, or column customization for
+  **Export selected**; it is CSV-only with default fields by design.
 
 ## References
 
