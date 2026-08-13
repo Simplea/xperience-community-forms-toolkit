@@ -145,14 +145,7 @@ internal sealed class FormSubmissionExportService(
                 request.Columns),
             definition.Fields);
 
-        var listingFields = definition.Fields
-            .Where(field => field.VisibleInListing)
-            .Select(field => field.Identifier)
-            .ToHashSet(StringComparer.Ordinal);
-        if (options.ColumnIdentifiers.Any(identifier => !listingFields.Contains(identifier)))
-        {
-            throw new FormSubmissionExportValidationException("The current submissions columns are invalid.");
-        }
+        ValidateCurrentViewColumnIdentifiers(options.ColumnIdentifiers, definition.Fields);
 
         return CreatePreparedExport(definition, options, upperSubmissionId: 0, submissionIds);
     }
@@ -413,6 +406,20 @@ internal sealed class FormSubmissionExportService(
             || submissionIds.Distinct().Count() != submissionIds.Count)
         {
             throw new FormSubmissionExportValidationException("The current submissions view is invalid.");
+        }
+    }
+
+    internal static void ValidateCurrentViewColumnIdentifiers(
+        IReadOnlyList<string> columnIdentifiers,
+        IReadOnlyList<FormSubmissionExportField> availableFields)
+    {
+        var listingFields = availableFields
+            .Where(field => field.VisibleInListing)
+            .Select(field => field.Identifier)
+            .ToHashSet(StringComparer.Ordinal);
+        if (columnIdentifiers.Any(identifier => !listingFields.Contains(identifier)))
+        {
+            throw new FormSubmissionExportValidationException("The current submissions columns are invalid.");
         }
     }
 

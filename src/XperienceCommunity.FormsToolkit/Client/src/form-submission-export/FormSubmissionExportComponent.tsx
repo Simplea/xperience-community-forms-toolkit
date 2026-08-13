@@ -17,7 +17,7 @@ import {
   useSnackbar,
 } from "@kentico/xperience-admin-components";
 
-type ExportFormat = "excel" | "csv" | "xml";
+export type ExportFormat = "excel" | "csv" | "xml";
 type ExportOperation = "export" | "preview";
 type ExportOrder = "ascending" | "descending";
 
@@ -68,7 +68,7 @@ interface AntiForgeryContextValue {
   readonly refreshToken: () => Promise<void>;
 }
 
-const useXperienceAntiForgery = (
+export const useXperienceAntiForgery = (
   XperienceAdminBase as typeof XperienceAdminBase & {
     useAntiForgery: () => AntiForgeryContextValue;
   }
@@ -106,7 +106,7 @@ const startDownload = (url: string) => {
   link.remove();
 };
 
-const getAntiforgeryHeaders = (xsrfHeaders: Record<string, string>): Record<string, string> => {
+export const getAntiforgeryHeaders = (xsrfHeaders: Record<string, string>): Record<string, string> => {
   if (!Object.entries(xsrfHeaders).some(([name, value]) => name.length > 0 && value.length > 0)) {
     throw new Error("The administration security token is unavailable. Refresh the page and try again.");
   }
@@ -125,7 +125,7 @@ const getResponseFileName = (response: Response, format: ExportFormat): string =
   return regular ?? `form-submissions.${formatExtensions[format]}`;
 };
 
-const downloadResponse = async (response: Response, format: ExportFormat) => {
+export const downloadResponse = async (response: Response, format: ExportFormat) => {
   const blob = await response.blob();
   const objectUrl = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -138,7 +138,7 @@ const downloadResponse = async (response: Response, format: ExportFormat) => {
   window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
 };
 
-const readProblemDetail = async (response: Response): Promise<string> => {
+export const readProblemDetail = async (response: Response): Promise<string> => {
   try {
     const problem = await response.json() as { detail?: string };
     return problem.detail ?? "The export could not be prepared.";
@@ -147,7 +147,7 @@ const readProblemDetail = async (response: Response): Promise<string> => {
   }
 };
 
-const extractSubmissionId = (row: HTMLElement): number | null => {
+export const extractSubmissionId = (row: HTMLElement): number | null => {
   const links = Array.from(row.querySelectorAll<HTMLAnchorElement>("a[href]"));
   for (const link of links) {
     const segments = new URL(link.href, window.location.href).pathname.split("/").filter(Boolean);
@@ -265,7 +265,7 @@ export const FormSubmissionExportComponent = ({
   };
 
   const quickExport = async (requestedFormat: ExportFormat) => {
-    const label = `Export to ${formatLabels[requestedFormat]}`;
+    const label = `Export Page to ${formatLabels[requestedFormat]}`;
     setPendingLabel(label);
     setInProgress(true);
 
@@ -380,7 +380,7 @@ export const FormSubmissionExportComponent = ({
         )}
       >
         {(["csv", "excel", "xml"] as const).map((quickFormat) => {
-          const label = `Export to ${formatLabels[quickFormat]}`;
+          const label = `Export Page to ${formatLabels[quickFormat]}`;
           return (
             <MenuItem
               key={quickFormat}
