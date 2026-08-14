@@ -2,6 +2,9 @@
 
 **/wwwroot/cache.json
 
+# Uploaded form submission files must never be committed (personal data)
+**/assets/BizFormFiles/
+
 ### Xbk additions end
 
 ## Ignore Visual Studio temporary files, build results, and

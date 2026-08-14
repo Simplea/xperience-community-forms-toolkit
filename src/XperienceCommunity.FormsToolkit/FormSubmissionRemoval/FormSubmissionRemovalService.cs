@@ -1,5 +1,8 @@
+using CMS.Base;
 using CMS.DataEngine;
 using CMS.OnlineForms;
+
+using Microsoft.Extensions.Logging;
 
 using XperienceCommunity.FormsToolkit.FormSubmissionExport;
 
@@ -14,8 +17,18 @@ public interface IFormSubmissionRemovalService
     public Task<int> DeleteMatchingAsync(int formId, FormSubmissionRemovalOptions options, CancellationToken cancellationToken);
 }
 
-internal sealed class FormSubmissionRemovalService(IFormSubmissionExportService exportService) : IFormSubmissionRemovalService
+internal sealed class FormSubmissionRemovalService(
+    IFormSubmissionExportService exportService,
+    ILogger<FormSubmissionRemovalService> logger) : IFormSubmissionRemovalService
 {
+    // Xperience by Kentico's documented default storage location for form file uploads,
+    // confirmed against a running instance: <web app physical root>\assets\BizFormFiles.
+    // CMS.IO.File.Delete did not resolve the "~/assets/bizformfiles/" virtual form directly
+    // (it appears to expect an already-resolved path and silently no-ops otherwise), so the
+    // physical path is built explicitly from the web application's physical root instead.
+    private static readonly string bizFormFilesPhysicalFolder =
+        CMS.IO.Path.Combine(SystemContext.WebApplicationPhysicalPath, "assets", "BizFormFiles");
+
     private const int BatchSize = 1000;
 
     public async Task<int> DeleteByIdsAsync(int formId, IReadOnlyList<int> submissionIds, CancellationToken cancellationToken)
@@ -28,19 +41,22 @@ internal sealed class FormSubmissionRemovalService(IFormSubmissionExportService 
         }
 
         var definition = await exportService.GetDefinitionAsync(formId, cancellationToken);
+        var uploadFieldSourceNames = GetUploadFieldSourceNames(definition);
+        string[] columns = [definition.ItemIdColumn, .. uploadFieldSourceNames];
 
         int deletedCount = 0;
         foreach (int[] idBatch in distinctIds.Chunk(BatchSize))
         {
             cancellationToken.ThrowIfCancellationRequested();
             var items = await BizFormItemProvider.GetItems(definition.FormClassName)
-                .Columns(definition.ItemIdColumn)
+                .Columns(columns)
                 .WhereIn(definition.ItemIdColumn, idBatch)
                 .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
 
             foreach (var item in items)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                DeleteUploadedFiles(item, uploadFieldSourceNames, formId);
                 item.Delete();
                 deletedCount++;
             }
@@ -70,7 +86,8 @@ internal sealed class FormSubmissionRemovalService(IFormSubmissionExportService 
     {
         ArgumentNullException.ThrowIfNull(options);
         var definition = await exportService.GetDefinitionAsync(formId, cancellationToken);
-        string[] columns = [definition.ItemIdColumn, nameof(BizFormItem.FormInserted)];
+        var uploadFieldSourceNames = GetUploadFieldSourceNames(definition);
+        string[] columns = [definition.ItemIdColumn, nameof(BizFormItem.FormInserted), .. uploadFieldSourceNames];
 
         var upperBoundaryResult = await BizFormItemProvider.GetItems(definition.FormClassName)
             .Columns(definition.ItemIdColumn)
@@ -110,6 +127,7 @@ internal sealed class FormSubmissionRemovalService(IFormSubmissionExportService 
                 cancellationToken.ThrowIfCancellationRequested();
                 cursorInserted = item.FormInserted;
                 cursorId = item.ItemID;
+                DeleteUploadedFiles(item, uploadFieldSourceNames, formId);
                 item.Delete();
                 deletedCount++;
             }
@@ -121,6 +139,42 @@ internal sealed class FormSubmissionRemovalService(IFormSubmissionExportService 
         }
 
         return deletedCount;
+    }
+
+    private void DeleteUploadedFiles(BizFormItem item, IReadOnlyList<string> uploadFieldSourceNames, int formId)
+    {
+        foreach (string sourceName in uploadFieldSourceNames)
+        {
+            string systemFileName = UploadedFileName.ExtractSystemFileName(item.GetValue(sourceName));
+            if (string.IsNullOrWhiteSpace(systemFileName))
+            {
+                continue;
+            }
+
+            try
+            {
+                string path = CMS.IO.Path.Combine(bizFormFilesPhysicalFolder, systemFileName);
+                if (CMS.IO.File.Exists(path))
+                {
+                    CMS.IO.File.Delete(path);
+                }
+                else
+                {
+                    logger.LogWarning(
+                        "Uploaded file was not found at the expected path for form {FormId} submission {SubmissionId}.",
+                        formId,
+                        item.ItemID);
+                }
+            }
+            catch (Exception exception)
+            {
+                logger.LogWarning(
+                    exception,
+                    "Could not delete an uploaded file for form {FormId} submission {SubmissionId}.",
+                    formId,
+                    item.ItemID);
+            }
+        }
     }
 
     private static ObjectQuery<BizFormItem> ApplyRange(ObjectQuery<BizFormItem> query, FormSubmissionRemovalRange range)
@@ -185,4 +239,11 @@ internal sealed class FormSubmissionRemovalService(IFormSubmissionExportService 
 
         return query;
     }
+
+    private static IReadOnlyList<string> GetUploadFieldSourceNames(FormSubmissionExportDefinition definition) =>
+        definition.Fields
+            .Where(field => field.IsUploadedFile)
+            .Select(field => field.SourceName)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
 }

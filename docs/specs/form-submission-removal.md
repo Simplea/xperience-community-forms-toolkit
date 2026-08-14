@@ -170,20 +170,31 @@ Type DELETE to confirm
 
 - Deletion is permanent. There is no soft delete, recycle bin, or undo,
   matching the native per-row delete's own behavior.
-- Deleting a submission relies on `BizFormItem.Delete()` to also remove its
-  uploaded files, the same way the native per-row delete presumably does.
-  This is a deliberate compatibility decision, not an assumption made lightly:
-  the only public API found for resolving an uploaded file's physical path
-  (`IBizFormFilePathProvider`) was introduced in Xperience by Kentico
-  `31.6.0` — confirmed absent through `31.5.2` — which covers only a narrow
-  slice of this toolkit's `30.11.0`+ supported range. Manually deleting files
-  through that API was therefore not viable as the primary mechanism without
-  either fragmenting the toolkit's compatibility matrix or leaving most
-  supported versions without file cleanup regardless. Verify this behavior
-  empirically (delete a submission with an uploaded file and confirm the
-  physical file is removed) before release; if it turns out `.Delete()` does
-  not cascade to files, revisit this decision explicitly rather than
-  silently shipping orphaned files.
+- Deleting a submission also deletes its uploaded files, verified empirically
+  end to end (submitted a file, confirmed the physical file on disk, deleted
+  the submission, confirmed both the database row and the physical file were
+  gone). `BizFormItem.Delete()` alone does **not** do this — confirmed by the
+  same testing, contrary to this specification's original assumption — so the
+  toolkit deletes the physical file itself before deleting the row:
+  - The only public API found for resolving an uploaded file's physical path
+    (`IBizFormFilePathProvider`) was introduced in Xperience by Kentico
+    `31.6.0`, far above this toolkit's `30.11.0` floor, so it is not used.
+    Instead the physical path is built directly from
+    `SystemContext.WebApplicationPhysicalPath` combined with the documented
+    default storage location, `assets/BizFormFiles`, using `CMS.IO.Path`/
+    `CMS.IO.File` (stable back to `30.11.0`, and itself an abstraction over
+    local disk, Azure Blob, or Amazon S3 storage).
+  - The **Kentico.FileUploader** form component (the current file-upload
+    component; an older, differently-named component identifier does not
+    match it — see the Export specification's `IsUploadedFileField` fix)
+    stores its field value as a single raw string in the form
+    `"{systemFileName}/{originalFileName}"`, confirmed directly against the
+    underlying database column, rather than as a structured `BizFormUploadFile`
+    object. Parsing this format correctly (system file name, not original
+    file name) is required to locate the physical file; see
+    `UploadedFileName.ExtractSystemFileName`.
+  - This deletion order and mechanism apply identically to quick delete and
+    Advanced delete, since both go through the shared deletion service.
 - Deletion never removes the form definition, its data class, or its table.
 - Deletion does not touch contacts, activities, consents, or other data covered
   by Xperience's GDPR "right to be forgotten" flow.
@@ -264,11 +275,11 @@ version. Confirm:
   whether its confirmation template includes the selected count automatically;
 - whether the native selection UI is page-bounded or can span pages via a
   "select all matching" affordance (see Quick delete's Compatibility note);
-- that `BizFormItem.Delete()` removes a submission's uploaded files, the same
-  way the native per-row delete presumably does (see Deletion contract for
-  why manual file deletion through `IBizFormFilePathProvider` was rejected as
-  the primary mechanism — that API is absent before Xperience by Kentico
-  `31.6.0`); and
+- that the shared deletion service's explicit file-cleanup step (physical
+  path plus the `Kentico.FileUploader` raw-value parsing) continues to match
+  reality on the target version, since `BizFormItem.Delete()` alone does not
+  remove uploaded files and `IBizFormFilePathProvider` remains unavailable
+  before Xperience by Kentico `31.6.0` (see Deletion contract); and
 - that no required behavior depends on `.Internal` namespaces or reflection.
 
 Registering a second, independent `PageExtender<FormSubmissionsTab>` alongside
@@ -320,8 +331,8 @@ re-verification, only reproduction in the toolkit's own code and tests.
   preview/count, and confirmed delete.
 - Shared submission deletion service (generalized from the Retention
   specification's purge service): resolves matching IDs or accepts explicit
-  IDs and deletes rows in bounded batches via `BizFormItem.Delete()` (relied
-  upon for uploaded-file cleanup too; see Deletion contract), and is used by
+  IDs, explicitly deletes each row's uploaded files (see Deletion contract)
+  before calling `BizFormItem.Delete()`, in bounded batches, and is used by
   quick delete, Advanced delete, and the scheduled retention task.
 
 ## Test strategy
@@ -373,7 +384,7 @@ re-verification, only reproduction in the toolkit's own code and tests.
 - **Advanced delete** removes only submissions matching an explicit date range
   and/or record limit, only after a current preview count has been shown and a
   confirmation phrase typed.
-- Both delete paths rely on `BizFormItem.Delete()` for uploaded-file cleanup
+- Both delete paths remove each deleted submission's uploaded files
   (verified empirically per Deletion contract) and never remove the form, its
   data class, or another form's data.
 - Quick delete, Advanced delete, the native per-row delete, and the scheduled
