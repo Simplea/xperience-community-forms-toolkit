@@ -19,7 +19,7 @@ public sealed class FormSubmissionRemovalPageExtender(
         if (permission.Succeeded)
         {
             Page.PageConfiguration.MassActions.AddCommandWithConfirmation(
-                label: "Delete",
+                label: "Delete selected",
                 command: nameof(DeleteSelectedSubmissions),
                 confirmation: "Delete the selected submissions?",
                 confirmationButton: "Delete",
@@ -27,9 +27,75 @@ public sealed class FormSubmissionRemovalPageExtender(
                 icon: Icons.Bin,
                 title: "Delete selected submissions",
                 destructive: true);
+
+            var headerActions = Page.PageConfiguration.HeaderActions.AddActionWithCustomComponent(
+                new AddActionWithCustomComponentParameters(
+                    "Advanced delete",
+                    new FormSubmissionRemovalActionComponent
+                    {
+                        Properties = new FormSubmissionRemovalActionProperties(),
+                    })
+                {
+                    Icon = Icons.Bin,
+                    Title = "Advanced delete",
+                    Destructive = true,
+                });
+            headerActions[^1].ButtonColor = ButtonColor.Secondary;
         }
 
         await base.ConfigurePage();
+    }
+
+    [PageCommand(Permission = FormSubmissionRemovalConstants.Permission)]
+    public async Task<ICommandResponse<FormSubmissionRemovalPreviewResponse>> PreviewAdvancedDelete(
+        FormSubmissionRemovalRangeRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var options = FormSubmissionRemovalRangeParser.Parse(request);
+            int count = await removalService.CountMatchingAsync(Page.FormId, options, cancellationToken);
+            return ResponseFrom(new FormSubmissionRemovalPreviewResponse { MatchingCount = count });
+        }
+        catch (FormSubmissionRemovalValidationException exception)
+        {
+            return ResponseFrom(new FormSubmissionRemovalPreviewResponse { Error = exception.Message });
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Could not preview advanced delete for form {FormId}.", Page.FormId);
+            return ResponseFrom(new FormSubmissionRemovalPreviewResponse { Error = "The matching count could not be calculated." });
+        }
+    }
+
+    [PageCommand(Permission = FormSubmissionRemovalConstants.Permission)]
+    public async Task<ICommandResponse<FormSubmissionAdvancedDeleteResponse>> AdvancedDelete(
+        FormSubmissionRemovalRangeRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var options = FormSubmissionRemovalRangeParser.Parse(request);
+            int deleted = await removalService.DeleteMatchingAsync(Page.FormId, options, cancellationToken);
+            return ResponseFrom(new FormSubmissionAdvancedDeleteResponse { DeletedCount = deleted });
+        }
+        catch (FormSubmissionRemovalValidationException exception)
+        {
+            return ResponseFrom(new FormSubmissionAdvancedDeleteResponse { Error = exception.Message });
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Could not perform advanced delete for form {FormId}.", Page.FormId);
+            return ResponseFrom(new FormSubmissionAdvancedDeleteResponse { Error = "The submissions could not be deleted." });
+        }
     }
 
     [PageCommand(Permission = FormSubmissionRemovalConstants.Permission)]
