@@ -86,7 +86,7 @@ const formatExtensions: Record<ExportFormat, string> = {
   xml: "xml",
 };
 
-const toDateOnly = (value: Date | null): string | null => {
+export const toDateOnly = (value: Date | null): string | null => {
   if (!value) {
     return null;
   }
@@ -97,7 +97,7 @@ const toDateOnly = (value: Date | null): string | null => {
   return `${year}-${month}-${day}`;
 };
 
-const startDownload = (url: string) => {
+export const startDownload = (url: string) => {
   const link = document.createElement("a");
   link.href = url;
   link.style.display = "none";
