@@ -25,14 +25,13 @@ public sealed class FormSubmissionsPageExtender(
             try
             {
                 var definition = await exportService.GetDefinitionAsync(Page.FormId, CancellationToken.None);
-                Page.PageConfiguration.HeaderActions.AddActionWithCustomComponent(
+                var headerActions = Page.PageConfiguration.HeaderActions.AddActionWithCustomComponent(
                     new AddActionWithCustomComponentParameters(
-                        "Export",
+                        "Advanced export",
                         new FormSubmissionExportActionComponent
                         {
                             Properties = new FormSubmissionExportActionProperties
                             {
-                                CurrentViewDownloadUrl = $"{FormSubmissionExportConstants.CurrentViewDownloadRoute}/{Page.FormId}",
                                 Fields = definition.Fields
                                     .Select(field => new FormSubmissionExportFieldOption(
                                         field.Identifier,
@@ -43,9 +42,10 @@ public sealed class FormSubmissionsPageExtender(
                             },
                         })
                     {
-                        Icon = Icons.ChevronDown,
-                        Title = "Export form submissions",
+                        Icon = Icons.ArrowDownLine,
+                        Title = "Advanced export",
                     });
+                headerActions[^1].ButtonColor = ButtonColor.Secondary;
 
                 Page.PageConfiguration.MassActions.AddActionWithCustomComponent(
                     new AddActionWithCustomComponentParameters(

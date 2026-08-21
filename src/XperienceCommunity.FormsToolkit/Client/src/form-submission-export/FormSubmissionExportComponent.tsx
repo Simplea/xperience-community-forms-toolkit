@@ -7,14 +7,10 @@ import {
   Checkbox,
   DateTimeInput,
   Dialog,
-  DropDownActionMenu,
-  DropDownPlacement,
   Input,
   MenuItem,
   NotificationBarAlert,
   Select,
-  SnackbarItemVariant,
-  useSnackbar,
 } from "@kentico/xperience-admin-components";
 
 export type ExportFormat = "excel" | "csv" | "xml";
@@ -25,12 +21,10 @@ interface ExportField {
   readonly identifier: string;
   readonly sourceName: string;
   readonly caption: string;
-  readonly visibleInListing: boolean;
 }
 
 interface ComponentData {
   readonly commandName: string;
-  readonly currentViewDownloadUrl: string;
   readonly fields: readonly ExportField[];
 }
 
@@ -52,12 +46,6 @@ interface ExportRequest {
   readonly columns: readonly string[] | null;
 }
 
-interface CurrentViewRequest {
-  readonly format: ExportFormat;
-  readonly submissionIds: readonly number[];
-  readonly columns: readonly string[];
-}
-
 interface ExportResponse {
   readonly downloadUrl?: string;
   readonly error?: string;
@@ -74,19 +62,13 @@ export const useXperienceAntiForgery = (
   }
 ).useAntiForgery;
 
-const formatLabels: Record<ExportFormat, string> = {
-  excel: "Excel",
-  csv: "CSV",
-  xml: "XML",
-};
-
 const formatExtensions: Record<ExportFormat, string> = {
   excel: "xlsx",
   csv: "csv",
   xml: "xml",
 };
 
-const toDateOnly = (value: Date | null): string | null => {
+export const toDateOnly = (value: Date | null): string | null => {
   if (!value) {
     return null;
   }
@@ -97,7 +79,7 @@ const toDateOnly = (value: Date | null): string | null => {
   return `${year}-${month}-${day}`;
 };
 
-const startDownload = (url: string) => {
+export const startDownload = (url: string) => {
   const link = document.createElement("a");
   link.href = url;
   link.style.display = "none";
@@ -163,58 +145,11 @@ export const extractSubmissionId = (row: HTMLElement): number | null => {
   return null;
 };
 
-const captureCurrentView = (fields: readonly ExportField[]): Omit<CurrentViewRequest, "format"> => {
-  const table = document.querySelector<HTMLElement>('[data-testid="table"][role="table"]');
-  if (!table) {
-    throw new Error("The current submissions view could not be read. Refresh the page and try again.");
-  }
-
-  const rows = Array.from(table.querySelectorAll<HTMLElement>('[data-testid="table-row"][role="row"]'));
-  const fieldsBySourceName = new Map(fields.map((field) => [field.sourceName.toLocaleLowerCase(), field]));
-
-  const visibleSourceNames = rows.length > 0
-    ? Array.from(rows[0].querySelectorAll<HTMLElement>('[role="cell"][data-testid^="table-cell-"]'))
-      .map((cell) => cell.dataset.testid?.slice("table-cell-".length) ?? "")
-    : fields.filter((field) => field.visibleInListing).map((field) => field.sourceName);
-
-  const columns = visibleSourceNames
-    .map((sourceName) => fieldsBySourceName.get(sourceName.toLocaleLowerCase())?.identifier)
-    .filter((identifier): identifier is string => Boolean(identifier));
-  if (columns.length === 0 || new Set(columns).size !== columns.length) {
-    throw new Error("The current submissions columns could not be read. Refresh the page and try again.");
-  }
-
-  const submissionIds = rows.map(extractSubmissionId);
-  if (submissionIds.some((identifier) => identifier === null)) {
-    throw new Error("The current submissions could not be identified. Refresh the page and try again.");
-  }
-
-  const resolvedIds = submissionIds as number[];
-  if (new Set(resolvedIds).size !== resolvedIds.length) {
-    throw new Error("The current submissions view is invalid. Refresh the page and try again.");
-  }
-
-  return { submissionIds: resolvedIds, columns };
-};
-
-const getTriggerRect = (): DOMRect => {
-  if (document.activeElement instanceof HTMLElement) {
-    const rect = document.activeElement.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      return rect;
-    }
-  }
-
-  return new DOMRect(window.innerWidth - 180, 72, 160, 1);
-};
-
 export const FormSubmissionExportComponent = ({
   commandName,
-  currentViewDownloadUrl,
   fields,
   unloadComponent,
 }: FormSubmissionExportComponentProps) => {
-  const [advanced, setAdvanced] = useState(false);
   const [format, setFormat] = useState<ExportFormat>("excel");
   const [from, setFrom] = useState<Date | null>(null);
   const [to, setTo] = useState<Date | null>(null);
@@ -226,13 +161,8 @@ export const FormSubmissionExportComponent = ({
     () => new Set(fields.map((field) => field.identifier)),
   );
   const [inProgress, setInProgress] = useState(false);
-  const [pendingLabel, setPendingLabel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pendingOperation = useRef<ExportOperation>("export");
-  const triggerRect = useRef(getTriggerRect());
-  const menuHasOpened = useRef(false);
-  const { addMessage } = useSnackbar();
-  const { getXsrfHeader } = useXperienceAntiForgery();
 
   const orderedSelectedColumns = useMemo(
     () => fields.filter((field) => selectedColumns.has(field.identifier)).map((field) => field.identifier),
@@ -244,7 +174,6 @@ export const FormSubmissionExportComponent = ({
     {
       after: (response) => {
         setInProgress(false);
-        setPendingLabel(null);
         if (response?.error) {
           setError(response.error);
           return;
@@ -259,36 +188,6 @@ export const FormSubmissionExportComponent = ({
       },
     },
   );
-
-  const notifyQuickExportError = (message: string) => {
-    addMessage({ message, variant: SnackbarItemVariant.Error, autoHide: true });
-  };
-
-  const quickExport = async (requestedFormat: ExportFormat) => {
-    const label = `Export Page to ${formatLabels[requestedFormat]}`;
-    setPendingLabel(label);
-    setInProgress(true);
-
-    try {
-      const currentView = captureCurrentView(fields);
-      const response = await fetch(currentViewDownloadUrl, {
-        method: "POST",
-        credentials: "same-origin",
-        headers: getAntiforgeryHeaders(getXsrfHeader()),
-        body: JSON.stringify({ format: requestedFormat, ...currentView } satisfies CurrentViewRequest),
-      });
-      if (!response.ok) {
-        throw new Error(await readProblemDetail(response));
-      }
-
-      await downloadResponse(response, requestedFormat);
-      unloadComponent();
-    } catch (caught) {
-      setInProgress(false);
-      setPendingLabel(null);
-      notifyQuickExportError(caught instanceof Error ? caught.message : "The export could not be prepared.");
-    }
-  };
 
   const validateAdvanced = (): boolean => {
     if (from && to && from.getTime() > to.getTime()) {
@@ -316,7 +215,6 @@ export const FormSubmissionExportComponent = ({
     }
 
     pendingOperation.current = operation;
-    setPendingLabel(operation === "preview" ? "Preview" : `Export to ${formatLabels[format]}`);
     setInProgress(true);
 
     try {
@@ -334,7 +232,6 @@ export const FormSubmissionExportComponent = ({
       });
     } catch {
       setInProgress(false);
-      setPendingLabel(null);
       setError("The export could not be prepared.");
     }
   };
@@ -350,55 +247,6 @@ export const FormSubmissionExportComponent = ({
       return next;
     });
   };
-
-  if (!advanced) {
-    const rect = triggerRect.current;
-    return (
-      <DropDownActionMenu
-        open
-        placement={DropDownPlacement.BottomStart}
-        onToggle={(isOpen) => {
-          if (isOpen) {
-            menuHasOpened.current = true;
-          } else if (menuHasOpened.current && !inProgress) {
-            unloadComponent();
-          }
-        }}
-        renderTrigger={(ref) => (
-          <span
-            ref={ref as React.RefObject<HTMLSpanElement>}
-            aria-hidden
-            style={{
-              position: "fixed",
-              left: `${rect.left}px`,
-              top: `${rect.bottom}px`,
-              width: `${Math.max(rect.width, 1)}px`,
-              height: "1px",
-              pointerEvents: "none",
-            }}
-          />
-        )}
-      >
-        {(["csv", "excel", "xml"] as const).map((quickFormat) => {
-          const label = `Export Page to ${formatLabels[quickFormat]}`;
-          return (
-            <MenuItem
-              key={quickFormat}
-              primaryLabel={label}
-              secondaryLabel={inProgress && pendingLabel === label ? "Preparing..." : undefined}
-              disabled={inProgress}
-              onClick={() => quickExport(quickFormat)}
-            />
-          );
-        })}
-        <MenuItem
-          primaryLabel="Advanced export"
-          disabled={inProgress}
-          onClick={() => setAdvanced(true)}
-        />
-      </DropDownActionMenu>
-    );
-  }
 
   const noColumnsSelected = selectedColumns.size === 0;
   return (
@@ -441,8 +289,8 @@ export const FormSubmissionExportComponent = ({
         )}
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px" }}>
-          <DateTimeInput label={"From:\u00a0"} value={from} onChange={setFrom} showTime={false} allowClear />
-          <DateTimeInput label={"To:\u00a0"} value={to} onChange={setTo} showTime={false} allowClear />
+          <DateTimeInput label={"From: "} value={from} onChange={setFrom} showTime={false} allowClear />
+          <DateTimeInput label={"To: "} value={to} onChange={setTo} showTime={false} allowClear />
         </div>
 
         <Input
