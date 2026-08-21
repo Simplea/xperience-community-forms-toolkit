@@ -108,6 +108,13 @@ Advanced export
 
 ### Export selected (mass action)
 
+**Label.** The registered button's visible text is **Export**, not
+**Export selected** — the mass-action toolbar already displays a "Selected N
+item(s)" count next to it, so appending "selected" to the button restates
+what the count already says. This specification keeps calling the feature
+**Export selected** in prose for clarity against **Advanced export**; only the
+on-screen label is shortened.
+
 Xperience by Kentico's listing UI page template has a native, publicly
 documented **mass actions** mechanism: `PageConfiguration.MassActions` renders
 a checkbox column and a contextual action toolbar immediately below the search
