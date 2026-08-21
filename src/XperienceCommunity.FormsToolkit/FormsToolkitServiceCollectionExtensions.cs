@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using XperienceCommunity.FormsToolkit.FormCloning;
 using XperienceCommunity.FormsToolkit.FormSubmissionExport;
+using XperienceCommunity.FormsToolkit.FormSubmissionRemoval;
 
 namespace XperienceCommunity.FormsToolkit;
 
@@ -35,6 +36,7 @@ public static class FormsToolkitServiceCollectionExtensions
         services.TryAddScoped<IFormSubmissionExportPermissionEvaluator, FormSubmissionExportPermissionEvaluator>();
         services.TryAddScoped<IFormSubmissionExportService, FormSubmissionExportService>();
         services.TryAddScoped<IFormCloneService, FormCloneService>();
+        services.TryAddScoped<IFormSubmissionRemovalService, FormSubmissionRemovalService>();
         return services;
     }
 }

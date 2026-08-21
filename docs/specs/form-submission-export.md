@@ -369,6 +369,16 @@ tie-breaker. Ordering is independent of which columns are selected for output.
 - Preserve multiline text where the selected format supports it.
 - For uploaded-file fields, export the original/display filename only. Never export
   file bytes, server paths, temporary paths, or an unauthenticated download URL.
+  Confirmed and fixed post-implementation: `IsUploadedFileField`'s component-
+  identifier check used a stale value (`Kentico.Forms.Web.Mvc.FileUploaderComponent`,
+  an old MVC-era type name) that never matches the actual registered identifier,
+  `Kentico.FileUploader`, so upload fields were never recognized as such. Separately,
+  that component's raw field value is a single string in the form
+  `"{systemFileName}/{originalFileName}"`, not a structured `BizFormUploadFile`
+  object — confirmed directly against the underlying database column. Both are
+  fixed in `UploadedFileName`/`FormSubmissionExportService.IsUploadedFileField`;
+  see the Removal specification's Deletion contract, where the same investigation
+  originated.
 - For values without a specialized conversion, use the supported Xperience value
   representation and an invariant string conversion.
 - A value that cannot be converted must not fail the entire export. Emit an empty

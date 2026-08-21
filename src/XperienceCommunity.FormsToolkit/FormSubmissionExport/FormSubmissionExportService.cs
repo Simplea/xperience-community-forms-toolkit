@@ -394,10 +394,7 @@ internal sealed class FormSubmissionExportService(
 
     internal static bool IsUploadedFileField(string? dataType, string? componentIdentifier) =>
         string.Equals(dataType, BizFormUploadFile.DATATYPE_FORMFILE, StringComparison.OrdinalIgnoreCase)
-        || string.Equals(
-            componentIdentifier,
-            "Kentico.Forms.Web.Mvc.FileUploaderComponent",
-            StringComparison.OrdinalIgnoreCase);
+        || string.Equals(componentIdentifier, "Kentico.FileUploader", StringComparison.OrdinalIgnoreCase);
 
     internal static void ValidateCurrentViewSubmissionIds(IReadOnlyList<int> submissionIds)
     {
