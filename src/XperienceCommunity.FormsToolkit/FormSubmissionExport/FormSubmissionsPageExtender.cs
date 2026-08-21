@@ -53,7 +53,7 @@ public sealed class FormSubmissionsPageExtender(
 
                 Page.PageConfiguration.MassActions.AddActionWithCustomComponent(
                     new AddActionWithCustomComponentParameters(
-                        "Export selected",
+                        "Export",
                         new FormSubmissionExportSelectedActionComponent
                         {
                             Properties = new FormSubmissionExportSelectedActionProperties

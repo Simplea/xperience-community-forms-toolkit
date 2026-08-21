@@ -111,6 +111,14 @@ present a checkable row when the listing has none.
 
 ### Quick delete (mass action)
 
+**Label.** The registered button's visible text is **Delete**, not
+**Delete selected** — the mass-action toolbar already displays a "Selected N
+item(s)" count next to it, so appending "selected" to the button restates
+what the count already says, and it matches **Export selected**'s label
+change for the same reason. This specification keeps calling the feature
+**Delete selected** in prose for clarity against **Advanced delete**; only
+the on-screen label is shortened.
+
 - Registered independently of **Export selected**, using the same native
   mechanism: both can coexist in the same selection toolbar, the way Content
   Hub's own Publish/Translate/Move/Delete mass actions coexist today. Neither

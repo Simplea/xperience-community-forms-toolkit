@@ -22,7 +22,7 @@ public sealed class FormSubmissionRemovalPageExtender(
         if (permission.Succeeded)
         {
             Page.PageConfiguration.MassActions.AddCommandWithConfirmation(
-                label: "Delete selected",
+                label: "Delete",
                 command: nameof(DeleteSelectedSubmissions),
                 confirmation: "Delete the selected submissions?",
                 confirmationButton: "Delete",
