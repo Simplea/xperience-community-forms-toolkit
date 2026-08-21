@@ -10,7 +10,6 @@ internal sealed class FormSubmissionExportActionComponent
     protected override Task ConfigureClientProperties(FormSubmissionExportActionClientProperties clientProperties)
     {
         clientProperties.CommandName = FormSubmissionExportConstants.CreateTokenCommand;
-        clientProperties.CurrentViewDownloadUrl = Properties.CurrentViewDownloadUrl;
         clientProperties.Fields = Properties.Fields;
         return base.ConfigureClientProperties(clientProperties);
     }
@@ -18,8 +17,6 @@ internal sealed class FormSubmissionExportActionComponent
 
 internal sealed class FormSubmissionExportActionProperties : IActionComponentProperties
 {
-    public string CurrentViewDownloadUrl { get; init; } = string.Empty;
-
     public IReadOnlyList<FormSubmissionExportFieldOption> Fields { get; init; } = [];
 }
 
@@ -28,8 +25,6 @@ internal sealed class FormSubmissionExportActionClientProperties : IActionCompon
     public string ComponentName { get; init; } = FormSubmissionExportConstants.ClientComponent;
 
     public string CommandName { get; set; } = FormSubmissionExportConstants.CreateTokenCommand;
-
-    public string CurrentViewDownloadUrl { get; set; } = string.Empty;
 
     public IReadOnlyList<FormSubmissionExportFieldOption> Fields { get; set; } = [];
 }
