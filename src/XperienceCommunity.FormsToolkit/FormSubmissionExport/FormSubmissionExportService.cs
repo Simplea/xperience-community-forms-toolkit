@@ -10,6 +10,8 @@ public interface IFormSubmissionExportService
 {
     public Task<FormSubmissionExportDefinition> GetDefinitionAsync(int formId, CancellationToken cancellationToken);
 
+    public Task<bool> HasAnySubmissionsAsync(int formId, CancellationToken cancellationToken);
+
     public Task<PreparedFormSubmissionExport> PrepareAsync(
         int formId,
         FormSubmissionExportCommandRequest request,
@@ -97,6 +99,16 @@ internal sealed class FormSubmissionExportService(
             dataClass.ClassName,
             primaryKeyField.Name,
             fields);
+    }
+
+    public async Task<bool> HasAnySubmissionsAsync(int formId, CancellationToken cancellationToken)
+    {
+        var definition = await GetDefinitionAsync(formId, cancellationToken);
+        var items = await BizFormItemProvider.GetItems(definition.FormClassName)
+            .Columns(definition.ItemIdColumn)
+            .TopN(1)
+            .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
+        return items.Any();
     }
 
     public async Task<PreparedFormSubmissionExport> PrepareAsync(

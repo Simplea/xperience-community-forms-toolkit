@@ -3,6 +3,8 @@ using Kentico.Xperience.Admin.DigitalMarketing.UIPages;
 
 using Microsoft.Extensions.Logging;
 
+using XperienceCommunity.FormsToolkit.FormSubmissionExport;
+
 [assembly: PageExtender(typeof(XperienceCommunity.FormsToolkit.FormSubmissionRemoval.FormSubmissionRemovalPageExtender))]
 
 namespace XperienceCommunity.FormsToolkit.FormSubmissionRemoval;
@@ -10,6 +12,7 @@ namespace XperienceCommunity.FormsToolkit.FormSubmissionRemoval;
 [UIPermission(FormSubmissionRemovalConstants.Permission, "Delete form submissions")]
 public sealed class FormSubmissionRemovalPageExtender(
     IUIPermissionEvaluator permissionEvaluator,
+    IFormSubmissionExportService exportService,
     IFormSubmissionRemovalService removalService,
     ILogger<FormSubmissionRemovalPageExtender> logger) : PageExtender<FormSubmissionsTab>
 {
@@ -28,19 +31,29 @@ public sealed class FormSubmissionRemovalPageExtender(
                 title: "Delete selected submissions",
                 destructive: true);
 
-            var headerActions = Page.PageConfiguration.HeaderActions.AddActionWithCustomComponent(
-                new AddActionWithCustomComponentParameters(
-                    "Advanced delete",
-                    new FormSubmissionRemovalActionComponent
-                    {
-                        Properties = new FormSubmissionRemovalActionProperties(),
-                    })
+            try
+            {
+                if (await exportService.HasAnySubmissionsAsync(Page.FormId, CancellationToken.None))
                 {
-                    Icon = Icons.Bin,
-                    Title = "Advanced delete",
-                    Destructive = true,
-                });
-            headerActions[^1].ButtonColor = ButtonColor.Secondary;
+                    var headerActions = Page.PageConfiguration.HeaderActions.AddActionWithCustomComponent(
+                        new AddActionWithCustomComponentParameters(
+                            "Advanced delete",
+                            new FormSubmissionRemovalActionComponent
+                            {
+                                Properties = new FormSubmissionRemovalActionProperties(),
+                            })
+                        {
+                            Icon = Icons.Bin,
+                            Title = "Advanced delete",
+                            Destructive = true,
+                        });
+                    headerActions[^1].ButtonColor = ButtonColor.Secondary;
+                }
+            }
+            catch (FormSubmissionExportNotFoundException exception)
+            {
+                logger.LogWarning(exception, "Could not configure advanced delete for missing form {FormId}.", Page.FormId);
+            }
         }
 
         await base.ConfigurePage();

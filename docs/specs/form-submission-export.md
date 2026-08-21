@@ -95,6 +95,16 @@ Advanced export
 - Do not provide **Reset view**. Xperience by Kentico does not expose the equivalent
   persisted listing-view configuration used by Kentico 13, so the action would add
   little value and imply capabilities this integration does not provide.
+- Only register **Advanced export** when the selected form has at least one
+  submission, checked once with a lightweight existence query (`TopN(1)`) when
+  the page configures its actions. A form nobody has ever submitted has
+  nothing to export, so the button would only invite a pointless click. This
+  check is independent of the listing's current search or filter state: a
+  search that temporarily matches zero rows does not hide the button, since
+  Advanced export's date range and record limit operate over all of the
+  form's submissions, not the current view. **Advanced delete** (see the
+  Removal specification) applies the same all-time existence check for the
+  same reason.
 
 ### Export selected (mass action)
 
@@ -359,6 +369,14 @@ tie-breaker. Ordering is independent of which columns are selected for output.
   from the client.
 - If no records match, return a valid empty export: header-only for Excel or CSV
   when headers are enabled, and a valid root-only XML document.
+- Expose a lightweight `HasAnySubmissionsAsync(formId, cancellationToken)` on
+  `IFormSubmissionExportService` for the header-visibility check described
+  under Entry point and navigation: query `BizFormItemProvider.GetItems(...)`
+  for the primary-key column only, bounded with `TopN(1)`, and return whether
+  any row was returned. This is a shared existence check, not a count — do not
+  run an unbounded `Count` query just to answer a yes/no question. Both the
+  export and removal page extenders call this same method so the two header
+  actions apply identical criteria.
 
 ## Value handling shared by all formats
 
@@ -544,8 +562,10 @@ are mandatory:
 ## Suggested component boundaries
 
 - `FormSubmissionsPageExtender`: permission-gates and places the **Advanced export**
-  action, and registers the **Export selected** mass action on the same page's
-  `PageConfiguration.MassActions`.
+  action — only when `HasAnySubmissionsAsync` reports at least one submission —
+  and registers the **Export selected** mass action unconditionally on the same
+  page's `PageConfiguration.MassActions`, since it is already self-gated by the
+  platform's native selection UI.
 - Administration export component: renders the Advanced dialog directly on open,
   with option validation feedback and download initiation. Owns none of the
   mass-action selection UI, which is native to the platform.
@@ -597,6 +617,8 @@ extension so consuming applications have one documented integration path.
 
 - **Advanced export** and **Export selected** visibility for authorized and
   unauthorized users;
+- **Advanced export** hidden for a form with zero submissions, and shown once
+  a submission exists, independent of the listing's current search/filter view;
 - opening **Advanced export** goes straight to the dialog, with no intermediate
   menu;
 - **Export selected** appearing only once at least one row is checked via the
@@ -623,7 +645,8 @@ extension so consuming applications have one documented integration path.
 
 - The selected form's Submissions page contains one **Advanced export** header
   action, styled with `ButtonColor.Secondary` so it reads as an equal peer to
-  **Advanced delete** rather than the page's primary action.
+  **Advanced delete** rather than the page's primary action, and only when the
+  form has at least one submission.
 - **Advanced export** opens the Advanced export dialog directly, with no
   intermediate menu.
 - An **Export selected** mass action appears using Xperience's native selection UI
