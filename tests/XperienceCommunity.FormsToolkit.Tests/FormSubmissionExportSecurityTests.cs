@@ -244,6 +244,8 @@ public class FormSubmissionExportSecurityTests
 
         public Task<FormSubmissionExportDefinition> GetDefinitionAsync(int formId, CancellationToken cancellationToken) => Fail<FormSubmissionExportDefinition>();
 
+        public Task<bool> HasAnySubmissionsAsync(int formId, CancellationToken cancellationToken) => Fail<bool>();
+
         public Task<PreparedFormSubmissionExport> PrepareAsync(int formId, FormSubmissionExportCommandRequest request, CancellationToken cancellationToken) => Fail<PreparedFormSubmissionExport>();
 
         public Task<PreparedFormSubmissionExport> PrepareAsync(int formId, FormSubmissionExportOptions options, CancellationToken cancellationToken) => Fail<PreparedFormSubmissionExport>();

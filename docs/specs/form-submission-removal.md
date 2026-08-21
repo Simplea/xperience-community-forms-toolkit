@@ -1,6 +1,10 @@
 # Feature specification: Advanced submission removal
 
-Status: Proposed
+Status: Implemented; prerelease validation in progress. This revision renames
+the **Delete** mass action to **Delete selected** to match **Export
+selected**'s grammar, restyles the **Advanced delete** header action to pair
+visually with **Advanced export** (see `form-submission-export.md`), and adds
+a zero-submissions visibility gate to both header actions.
 Repository: `Simplea/xperience-community-forms-toolkit`
 Supported baseline: Xperience by Kentico `30.11.0` or newer; build-verified
 through `31.7.2`; .NET 8
@@ -22,7 +26,8 @@ documentation, which does not describe it. There is no way to remove more than
 one submission per click, and no way to remove submissions by criteria (a date
 range, or "everything currently on this page") without deleting rows one at a
 time. This feature adds that missing bulk/filtered removal capability next to
-the existing **Export** action, without touching the native per-row delete.
+the existing **Advanced export** action, without touching the native per-row
+delete.
 
 This feature is deliberately kept separate from the proposed Retention
 specification. Retention is an unattended, ongoing, age-based policy configured
@@ -71,15 +76,38 @@ remove data the administrator has not first seen the scope of.
 `Forms -> <selected form> -> Submissions`
 
 This feature adds two independent entry points, neither of which modifies the
-existing **Export** header action or the native per-row trash icon:
+native per-row trash icon:
 
-1. **Delete** — a native mass action that appears in Xperience's own selection
-   toolbar once the administrator checks at least one row.
-2. **Advanced delete** — a single header action button, always visible, styled
-   distinctly (danger/secondary) from **Export**'s primary styling so a
-   destructive action never reads as a safe one at a glance. It needs no
-   dropdown, since it is the only header-level action this feature adds; it
-   opens the Advanced delete dialog directly.
+1. **Delete selected** — a native mass action that appears in Xperience's own
+   selection toolbar once the administrator checks at least one row.
+2. **Advanced delete** — a single header action button that opens the Advanced
+   delete dialog directly; it needs no dropdown, since it is the only
+   header-level action this feature adds.
+
+**Styling.** `Kentico.Xperience.Admin.Base.ButtonColor` exposes only two
+values, `Primary` and `Secondary` (confirmed by reflecting on
+`Kentico.Xperience.Admin.Base.dll`). **Advanced delete** is registered with
+`ButtonColor.Secondary` — the same color as **Advanced export** — so the two
+header actions read as equal-weight siblings rather than one looking more
+important than the other, now that neither is a one-click primary path (see
+`form-submission-export.md`'s Entry point and navigation for the full
+reasoning). **Advanced delete** additionally sets `Destructive = true` (a
+separate flag from `ButtonColor`), which is what actually gives it its
+cautionary/danger treatment — `ButtonColor.Secondary` controls weight, not
+color intent.
+
+**Visibility.** Register **Advanced delete** only when the selected form has
+at least one submission, using the same `HasAnySubmissionsAsync` existence
+check `form-submission-export.md` defines for **Advanced export** (both page
+extenders call the same method, so the two header actions apply identical
+criteria and appear/disappear together). A form nobody has ever submitted has
+nothing to delete. This check runs once when the page configures its actions
+and is independent of the listing's current search or filter state — a search
+that temporarily matches zero rows does not hide the button, since Advanced
+delete's date range and record limit operate over all of the form's
+submissions, not the current view. **Delete selected** needs no such gate: it
+is already self-gated by the platform's native selection UI, which cannot
+present a checkable row when the listing has none.
 
 ### Quick delete (mass action)
 
@@ -224,9 +252,9 @@ specification's external behavior, permission, or acceptance criteria.
 
 - Register this feature's own `PageExtender<FormSubmissionsTab>`, separate
   from the existing Export extender, adding the **Advanced delete** header
-  action and the **Delete** mass action to the same `Page.PageConfiguration`.
-  Multiple independent extenders on this page have been confirmed to compose
-  correctly (see Context).
+  action and the **Delete selected** mass action to the same
+  `Page.PageConfiguration`. Multiple independent extenders on this page have
+  been confirmed to compose correctly (see Context).
 - Quick-delete command: the mass-action command signature
   (`IEnumerable<int> identifiers`) required by the platform, permission-gated,
   validating IDs before invoking the shared deletion service.
@@ -244,9 +272,9 @@ specification's external behavior, permission, or acceptance criteria.
   export permission and the Retention specification's permission. Being able
   to view/export submissions, or to configure a retention policy, must not by
   itself grant the ability to immediately mass-delete them.
-- Show both the **Delete** mass action and the **Advanced delete** header
-  action only to users who can access the form's submissions and hold this
-  permission; both commands independently re-check it.
+- Show both the **Delete selected** mass action and the **Advanced delete**
+  header action only to users who can access the form's submissions and hold
+  this permission; both commands independently re-check it.
 - Apply normal Xperience antiforgery validation to the Advanced-delete
   commands (the platform applies its own request validation to mass-action
   commands).
@@ -291,8 +319,9 @@ re-verification, only reproduction in the toolkit's own code and tests.
 
 - Unknown or deleted form: safe not-found administration error; nothing is
   deleted.
-- Invalid Advanced-delete filters, or **Delete** requested without a current
-  matching preview: validation error; nothing is deleted.
+- Invalid Advanced-delete filters, or the Advanced delete dialog's **Delete**
+  button requested without a current matching preview: validation error;
+  nothing is deleted.
 - Quick delete with an empty or invalid identifier list: safe validation
   response; nothing is deleted. Never fall back to deleting an unscoped or
   full set.
@@ -324,7 +353,10 @@ re-verification, only reproduction in the toolkit's own code and tests.
 
 - `FormSubmissionRemovalPageExtender`: this feature's own extender, separate
   from the Export extender, permission-gates and registers the **Advanced
-  delete** header action and the **Delete** mass action.
+  delete** header action — only when `HasAnySubmissionsAsync` reports at
+  least one submission — and the **Delete selected** mass action
+  unconditionally, since it is already self-gated by the platform's native
+  selection UI.
 - Quick-delete command: the mass-action command handler, validates
   platform-supplied IDs, invokes the shared deletion service.
 - Advanced-delete dialog and its page commands: filter validation,
@@ -344,8 +376,8 @@ re-verification, only reproduction in the toolkit's own code and tests.
 - Advanced-delete filter validation (date range, record limit, ordering),
   reusing the export specification's equivalent test cases;
 - preview/count accuracy against seeded data;
-- **Delete** (Advanced) disabled until a current preview exists, and
-  invalidated when a filter changes after a preview;
+- **Delete** (Advanced delete's confirm button) disabled until a current
+  preview exists, and invalidated when a filter changes after a preview;
 - shared deletion service batching and uploaded-file cleanup, exercised from
   both call shapes (explicit IDs and filter-resolved IDs);
 - permission-gated action and command behavior; and
@@ -354,13 +386,16 @@ re-verification, only reproduction in the toolkit's own code and tests.
 
 ### Integration and runtime tests
 
-- **Delete** mass action and **Advanced delete** header action visibility for
-  authorized and unauthorized users, independent of the export and retention
-  permissions;
-- **Delete** appearing only once at least one row is checked, and deleting
-  exactly the checked rows;
-- **Delete** and **Export selected** coexisting in the same selection toolbar
-  without interfering with each other;
+- **Delete selected** mass action and **Advanced delete** header action
+  visibility for authorized and unauthorized users, independent of the export
+  and retention permissions;
+- **Advanced delete** hidden for a form with zero submissions, and shown once
+  a submission exists, independent of the listing's current search/filter
+  view — the same behavior verified for **Advanced export**;
+- **Delete selected** appearing only once at least one row is checked, and
+  deleting exactly the checked rows;
+- **Delete selected** and **Export selected** coexisting in the same selection
+  toolbar without interfering with each other;
 - Advanced delete across open and closed date ranges and record limits,
   including zero matches;
 - confirmation-phrase gating and preview invalidation on filter change;
@@ -374,13 +409,16 @@ re-verification, only reproduction in the toolkit's own code and tests.
 
 ## Acceptance criteria
 
-- A **Delete** mass action appears in the Submissions listing's native
-  selection toolbar once at least one row is checked, and removes exactly the
-  checked submissions after the platform's confirmation step.
-- An **Advanced delete** header action, styled distinctly from **Export**, is
-  always available and opens the Advanced delete dialog.
+- A **Delete selected** mass action appears in the Submissions listing's
+  native selection toolbar once at least one row is checked, and removes
+  exactly the checked submissions after the platform's confirmation step.
+- An **Advanced delete** header action, styled `ButtonColor.Secondary` and
+  `Destructive` to pair visually with **Advanced export** while still reading
+  as the cautionary action of the two, opens the Advanced delete dialog. It is
+  shown only when the form has at least one submission.
 - The native single-row delete action is unchanged, and the existing
-  **Export**/**Export selected** actions are unaffected by this feature.
+  **Advanced export**/**Export selected** actions are unaffected by this
+  feature.
 - **Advanced delete** removes only submissions matching an explicit date range
   and/or record limit, only after a current preview count has been shown and a
   confirmation phrase typed.
