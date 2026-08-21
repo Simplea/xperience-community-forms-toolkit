@@ -6,8 +6,9 @@
 
 Xperience Community Forms Toolkit is an open-source collection of practical form
 extensions for Xperience by Kentico. It provides secure CSV, Excel, and XML exports
-for form submissions and a native administration action for cloning forms without
-copying submissions or runtime integrations.
+for form submissions, bulk and filtered submission removal, and a native
+administration action for cloning forms without copying submissions or runtime
+integrations.
 
 The project is developed and maintained by Andres Villenas at SimpleA. APIs and
 behavior may change before the first stable release.
@@ -18,7 +19,7 @@ behavior may change before the first stable release.
 
 | Xperience Version | Library Version |
 | ----------------- | --------------- |
-| 30.11.0 or newer  | 1.0.0-beta.3    |
+| 30.11.0 or newer  | 1.0.0-beta.4    |
 
 The package is build-verified through 31.7.2 and runtime smoke-tested on 31.1.2.
 Newer releases may work but require compatibility validation. See the
@@ -34,7 +35,7 @@ Newer releases may work but require compatibility validation. See the
 Add the package to your application using the .NET CLI:
 
 ```powershell
-dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.3
+dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.4
 ```
 
 Register the toolkit and its packaged administration extension:
@@ -55,10 +56,10 @@ builder.Services.AddFormsToolkit(options =>
 });
 ```
 
-Grant the **Export form submissions** permission to the appropriate administration
-roles, then find the action under **Forms -> selected form -> Submissions**.
-Users with Xperience's Forms Create permission can use **Clone form** from each row
-on the Forms listing.
+Grant the **Export form submissions** and/or **Delete form submissions**
+permissions to the appropriate administration roles, then find the corresponding
+actions under **Forms -> selected form -> Submissions**. Users with Xperience's
+Forms Create permission can use **Clone form** from each row on the Forms listing.
 
 ## Full Instructions
 

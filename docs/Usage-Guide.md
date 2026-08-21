@@ -14,7 +14,7 @@
 Install the toolkit package in the Xperience application:
 
 ```powershell
-dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.3
+dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.4
 ```
 
 Register the toolkit after registering Xperience services:
@@ -55,38 +55,43 @@ applications do not need to copy JavaScript files or run a separate client build
 If the application explicitly configures `CMSAdminClientModuleSettings`, keep the
 `xperience-community-forms-toolkit` module in `Embedded` mode.
 
-## Assign the export permission
+## Assign the export and delete permissions
 
-The toolkit adds the **Export form submissions** permission to the existing Forms
-administration application. In **Role management**, edit the relevant role and
-grant this permission under the Forms application.
+The toolkit adds the **Export form submissions** and **Delete form submissions**
+permissions to the existing Forms administration application. In **Role
+management**, edit the relevant role and grant the permissions it needs under the
+Forms application. They are independent: a role can export without being able to
+delete, or the reverse.
 
-The stable permission identifier is:
+The stable permission identifiers are:
 
 ```text
 XperienceCommunity.FormsToolkit.ExportSubmissions
+XperienceCommunity.FormsToolkit.DeleteSubmissions
 ```
 
 Users also need the normal Xperience permissions required to open the Forms
-application and its Submissions tab. The export action is absent when the toolkit
-permission is not granted. The download endpoint additionally requires an
-authenticated Xperience administration session. Advanced exports use a short-lived,
-user-bound token issued by the permission-checked page command. Quick current-view
-exports use an antiforgery-protected POST request and independently recheck the
-toolkit permission before reading form data.
+application and its Submissions tab. Each toolkit action is absent when its
+permission is not granted, and is hidden entirely for a form with no submissions
+regardless of permission. The export download endpoint additionally requires an
+authenticated Xperience administration session. Advanced exports and Advanced
+deletes use a short-lived, user-bound token or a permission-checked page command;
+**Export selected** uses an antiforgery-protected POST request and independently
+rechecks the export permission before reading form data.
 
 ## Export form submissions
 
 1. Open **Forms** in the Xperience administration.
 2. Select a form and open **Submissions**.
-3. Select **Export** in the page header.
-4. Select **Export to CSV**, **Export to Excel**, or **Export to XML** from the
-   dropdown. CSV appears first as the recommended quick format. Use **Advanced
-   export** for additional options.
+3. Select one or more rows using the listing's native selection checkboxes
+   (including "select all" in the table header to cover the whole page), then
+   select **Export** in the toolbar that appears below the search bar; or
+4. Select **Advanced export** in the page header for filter-based options instead
+   of a row selection.
 
-Quick exports contain the records and data columns shown on the current listing
-page, in their current displayed order. They honor the current search, column
-sorting, paging, and page size.
+**Export** opens a small dialog to choose **CSV**, **Excel**, or **XML**, then
+exports exactly the checked rows and their currently displayed columns, in their
+displayed order.
 
 Select **Advanced export** to configure:
 
@@ -103,12 +108,41 @@ Select **Advanced export** to configure:
 matching records. A smaller configured record maximum is honored.
 
 Advanced exports with empty dates and no record maximum include all submissions.
-Quick exports include only the current grid page. Uploaded files are represented by
+**Export** only includes the rows you checked. Uploaded files are represented by
 filename only.
 
 Exports are generated incrementally from bounded database batches and downloaded
 through the authenticated response. The toolkit does not create completed export
 files in application or web-accessible storage.
+
+## Delete form submissions
+
+1. Open **Forms** in the Xperience administration.
+2. Select a form and open **Submissions**.
+3. Select one or more rows using the listing's native selection checkboxes, then
+   select **Delete** in the toolbar that appears below the search bar; or
+4. Select **Advanced delete** in the page header to remove submissions by date
+   range and/or record limit instead of a row selection.
+
+**Delete** removes exactly the checked rows after a confirmation prompt. This is
+permanent; there is no undo or recycle bin.
+
+Select **Advanced delete** to configure the same date range, record limit, and
+ordering options as Advanced export, then:
+
+1. Select **Preview matching count** to see how many submissions would be removed.
+   This is required before deletion is allowed, and is invalidated by any further
+   filter change.
+2. Optionally select **Export these first** to capture a copy via Advanced export,
+   prefilled with the same date range, before deleting.
+3. Type `DELETE` to confirm, then select **Delete**.
+
+Both delete paths also remove each deleted submission's uploaded files. Deleting a
+submission never removes the form definition, its data class, or another form's
+data.
+
+**Advanced export** and **Advanced delete** are both hidden for a form with no
+submissions; there is nothing to act on until the form receives its first one.
 
 ## Clone a form
 
