@@ -34,11 +34,15 @@ builder.Services.AddFormsToolkit(options =>
 {
     options.MaximumConcurrentExports = 3;
     options.EnableFormCloning = true;
+    options.EnableFormSubmissionExport = true;
+    options.EnableFormSubmissionRemoval = true;
 });
 ```
 
-Form cloning is enabled by default. Set `EnableFormCloning` to `false` to remove
-the row action without disabling submission exports.
+Form cloning, submission export, and submission removal are each enabled by
+default and can be turned off independently. Setting `EnableFormCloning`,
+`EnableFormSubmissionExport`, or `EnableFormSubmissionRemoval` to `false` removes
+that feature's actions from the admin UI without affecting the other two.
 
 Map attribute-routed controllers in the request pipeline:
 

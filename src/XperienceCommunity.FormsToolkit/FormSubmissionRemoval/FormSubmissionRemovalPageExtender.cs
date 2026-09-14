@@ -2,6 +2,7 @@ using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Admin.DigitalMarketing.UIPages;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using XperienceCommunity.FormsToolkit.FormSubmissionExport;
 
@@ -14,12 +15,14 @@ public sealed class FormSubmissionRemovalPageExtender(
     IUIPermissionEvaluator permissionEvaluator,
     IFormSubmissionExportService exportService,
     IFormSubmissionRemovalService removalService,
+    IOptions<FormsToolkitOptions> options,
     ILogger<FormSubmissionRemovalPageExtender> logger) : PageExtender<FormSubmissionsTab>
 {
     public override async Task ConfigurePage()
     {
-        var permission = await permissionEvaluator.Evaluate(FormSubmissionRemovalConstants.Permission);
-        if (permission.Succeeded)
+        bool permitted = options.Value.EnableFormSubmissionRemoval
+            && (await permissionEvaluator.Evaluate(FormSubmissionRemovalConstants.Permission)).Succeeded;
+        if (permitted)
         {
             Page.PageConfiguration.MassActions.AddCommandWithConfirmation(
                 label: "Delete",
@@ -66,8 +69,8 @@ public sealed class FormSubmissionRemovalPageExtender(
     {
         try
         {
-            var options = FormSubmissionRemovalRangeParser.Parse(request);
-            int count = await removalService.CountMatchingAsync(Page.FormId, options, cancellationToken);
+            var removalOptions = FormSubmissionRemovalRangeParser.Parse(request);
+            int count = await removalService.CountMatchingAsync(Page.FormId, removalOptions, cancellationToken);
             return ResponseFrom(new FormSubmissionRemovalPreviewResponse { MatchingCount = count });
         }
         catch (FormSubmissionRemovalValidationException exception)
@@ -92,8 +95,8 @@ public sealed class FormSubmissionRemovalPageExtender(
     {
         try
         {
-            var options = FormSubmissionRemovalRangeParser.Parse(request);
-            int deleted = await removalService.DeleteMatchingAsync(Page.FormId, options, cancellationToken);
+            var removalOptions = FormSubmissionRemovalRangeParser.Parse(request);
+            int deleted = await removalService.DeleteMatchingAsync(Page.FormId, removalOptions, cancellationToken);
             return ResponseFrom(new FormSubmissionAdvancedDeleteResponse { DeletedCount = deleted });
         }
         catch (FormSubmissionRemovalValidationException exception)
