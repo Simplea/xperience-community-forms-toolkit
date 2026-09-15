@@ -1,13 +1,16 @@
 # Feature specification: Advanced submission removal
 
-Status: Implemented; prerelease validation in progress. This revision renames
-the **Delete** mass action to **Delete selected** to match **Export
-selected**'s grammar, restyles the **Advanced delete** header action to pair
-visually with **Advanced export** (see `form-submission-export.md`), and adds
-a zero-submissions visibility gate to both header actions.
+Status: Implemented and validated (see `docs/Compatibility.md`'s release
+validation history for the completed packed-artifact, dual-version, and
+admin UI checks). The **Delete**/**Export** mass-action buttons keep their
+shortened
+on-screen labels — see Quick delete's Label note — even after Xperience by
+Kentico `31.8.0` added its own native **Export** action to this listing; see
+`docs/Compatibility.md`'s "Known platform overlaps" for why that was kept
+as-is rather than changed.
 Repository: `Simplea/xperience-community-forms-toolkit`
 Supported baseline: Xperience by Kentico `30.11.0` or newer; build-verified
-through `31.7.2`; .NET 8
+through `31.8.4`; .NET 8
 Research date: 2026-08-12
 
 ## Context
@@ -16,8 +19,7 @@ Xperience Community Forms Toolkit is an independently owned integration maintain
 by Simplea for Xperience by Kentico. It is a reusable library, not an Xperience
 website and not a Kentico-owned product. The Dancing Goat project under `examples/`
 is the integration host used to run and verify the library. The toolkit already
-provides **Clone form**, submission **Export**, and a proposed **Retention**
-feature (scheduled, age-based auto-purge).
+provides **Clone form** and submission **Export**.
 
 The running Submissions listing at `Forms -> <selected form> -> Submissions`
 already includes a single-row delete action (a trash icon in the Actions column
@@ -29,13 +31,9 @@ time. This feature adds that missing bulk/filtered removal capability next to
 the existing **Advanced export** action, without touching the native per-row
 delete.
 
-This feature is deliberately kept separate from the proposed Retention
-specification. Retention is an unattended, ongoing, age-based policy configured
-once on the form; this feature is an immediate, administrator-triggered,
-one-time action taken from the Submissions listing — for example, clearing a
-batch of spam or test entries, or removing everything submitted during a known
-bad window. Both ultimately delete the same kind of data the same way, so both
-are specified to share one deletion engine rather than maintaining two.
+This feature is an immediate, administrator-triggered, one-time action taken
+from the Submissions listing — for example, clearing a batch of spam or test
+entries, or removing everything submitted during a known bad window.
 
 **Native mass actions.** Xperience by Kentico's listing UI page template has a
 publicly documented, first-party **mass actions** mechanism
@@ -239,22 +237,16 @@ Type DELETE to confirm
 
 ## Shared deletion engine
 
-Quick delete, Advanced delete, and the scheduled retention purge must all
-resolve to the same underlying primitive: delete a bounded, ordered batch of a
-form's `BizFormItem` rows (and their uploaded files), batched with keyset
-pagination. Build this as one shared internal service so the toolkit has a
-single, well-tested code path that deletes submission data, instead of three
-independent ones:
+Quick delete and Advanced delete both resolve to the same underlying
+primitive: delete a bounded, ordered batch of a form's `BizFormItem` rows
+(and their uploaded files), batched with keyset pagination. Build this as one
+shared internal service so the toolkit has a single, well-tested code path
+that deletes submission data, instead of two independent ones:
 
 - Quick delete supplies the platform-provided, server-validated list of
   submission IDs;
-- Advanced delete and the scheduled retention task supply date-range/record-
-  limit/ordering criteria that the service itself resolves to matching IDs.
-
-When both this feature and the Retention specification are implemented,
-generalize the Retention specification's suggested "Retention purge service"
-component into this shared service. Doing so does not change the Retention
-specification's external behavior, permission, or acceptance criteria.
+- Advanced delete supplies date-range/record-limit/ordering criteria that the
+  service itself resolves to matching IDs.
 
 ## Administration integration
 
@@ -277,8 +269,7 @@ specification's external behavior, permission, or acceptance criteria.
 
 - Define and enforce a dedicated permission (for example
   `XperienceCommunity.FormsToolkit.DeleteSubmissions`), independent of the
-  export permission and the Retention specification's permission. Being able
-  to view/export submissions, or to configure a retention policy, must not by
+  export permission. Being able to view or export submissions must not by
   itself grant the ability to immediately mass-delete them.
 - Show both the **Delete selected** mass action and the **Advanced delete**
   header action only to users who can access the form's submissions and hold
@@ -345,16 +336,15 @@ re-verification, only reproduction in the toolkit's own code and tests.
 ## Performance and consistency
 
 - Delete in bounded batches (the same ~1,000-row internal default used by
-  export and retention) using keyset pagination; avoid offset pagination.
+  export) using keyset pagination; avoid offset pagination.
 - Advanced delete applies its record limit using the same deterministic
   ordering shown in the dialog, plus the primary key as a tie-breaker.
 - Quick delete's scope is bounded by whatever the platform's native selection
   UI allows (see Compatibility); the shared deletion service still processes
   it in bounded batches rather than assuming a small set.
 - Concurrent operations are safe: deleting an already-deleted submission (for
-  example, a race with the native per-row delete, another Advanced delete, or
-  a scheduled retention run on the same form) is a no-op for that row rather
-  than an error.
+  example, a race with the native per-row delete or another Advanced delete
+  on the same form) is a no-op for that row rather than an error.
 - Propagate cancellation tokens through the shared deletion service.
 
 ## Suggested component boundaries
@@ -369,11 +359,10 @@ re-verification, only reproduction in the toolkit's own code and tests.
   platform-supplied IDs, invokes the shared deletion service.
 - Advanced-delete dialog and its page commands: filter validation,
   preview/count, and confirmed delete.
-- Shared submission deletion service (generalized from the Retention
-  specification's purge service): resolves matching IDs or accepts explicit
-  IDs, explicitly deletes each row's uploaded files (see Deletion contract)
-  before calling `BizFormItem.Delete()`, in bounded batches, and is used by
-  quick delete, Advanced delete, and the scheduled retention task.
+- Shared submission deletion service: resolves matching IDs or accepts
+  explicit IDs, explicitly deletes each row's uploaded files (see Deletion
+  contract) before calling `BizFormItem.Delete()`, in bounded batches, and is
+  used by both quick delete and Advanced delete.
 
 ## Test strategy
 
@@ -396,7 +385,7 @@ re-verification, only reproduction in the toolkit's own code and tests.
 
 - **Delete selected** mass action and **Advanced delete** header action
   visibility for authorized and unauthorized users, independent of the export
-  and retention permissions;
+  permission;
 - **Advanced delete** hidden for a form with zero submissions, and shown once
   a submission exists, independent of the listing's current search/filter
   view — the same behavior verified for **Advanced export**;
@@ -409,8 +398,8 @@ re-verification, only reproduction in the toolkit's own code and tests.
 - confirmation-phrase gating and preview invalidation on filter change;
 - **Export these** opening Advanced export prefilled with the same date range;
 - uploaded-file cleanup after both quick and Advanced delete;
-- concurrent quick delete, Advanced delete, the native per-row delete, and a
-  scheduled retention run against the same form;
+- concurrent quick delete, Advanced delete, and the native per-row delete
+  against the same form;
 - a large seeded Advanced delete: bounded batches, no timeout, and an accurate
   reported count; and
 - read-only deployment behavior for both delete paths.
@@ -433,12 +422,12 @@ re-verification, only reproduction in the toolkit's own code and tests.
 - Both delete paths remove each deleted submission's uploaded files
   (verified empirically per Deletion contract) and never remove the form, its
   data class, or another form's data.
-- Quick delete, Advanced delete, the native per-row delete, and the scheduled
-  retention purge all rely on one shared deletion engine rather than
-  duplicated logic.
+- Quick delete and Advanced delete rely on one shared deletion engine rather
+  than duplicated logic; the native per-row delete is unaffected and
+  unchanged.
 - Deletion activity is safely logged without submission values.
 - UI visibility and both commands enforce a dedicated delete permission,
-  independent of the export and retention permissions.
+  independent of the export permission.
 - Production code remains in the toolkit package.
 
 ## Out of scope
@@ -456,6 +445,11 @@ re-verification, only reproduction in the toolkit's own code and tests.
   selection.
 - Deleting across multiple forms in one operation.
 - A public headless/REST delete endpoint.
+- A scheduled, age-based retention/auto-purge policy. Considered during this
+  feature's design — see Shared deletion engine, which this feature builds as
+  a reusable internal service partly with that possibility in mind — and
+  intentionally deferred. No retention feature is currently planned or
+  specified; nothing in this repository implements it.
 
 ## References
 
@@ -465,9 +459,9 @@ re-verification, only reproduction in the toolkit's own code and tests.
 - [UI page permission checks](https://docs.kentico.com/documentation/developers-and-admins/customization/extend-the-administration-interface/ui-pages/ui-page-permission-checks.html)
 - [Form data API](https://docs.kentico.com/api/digital-marketing/form-data.html)
 - [Secure custom endpoints](https://docs.kentico.com/documentation/developers-and-admins/customization/secure-custom-endpoints.html)
-- This repository's `form-submission-export.md` and `form-submission-retention.md`
-  specifications, which this feature shares the native mass-action mechanism,
-  filter semantics, batching conventions, and deletion mechanics with.
+- This repository's `form-submission-export.md` specification, which this
+  feature shares the native mass-action mechanism, filter semantics, and
+  batching conventions with.
 
 Before implementation, inspect the public API metadata for the exact installed
 Xperience package version instead of copying signatures from an older Xperience
