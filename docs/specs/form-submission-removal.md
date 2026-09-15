@@ -229,6 +229,17 @@ Type DELETE to confirm
     `UploadedFileName.ExtractSystemFileName`.
   - This deletion order and mechanism apply identically to quick delete and
     Advanced delete, since both go through the shared deletion service.
+  - **File-cleanup failure contract** (reported as [#16](https://github.com/Simplea/xperience-community-forms-toolkit/issues/16)):
+    a submission's row is deleted only after every uploaded file it references
+    has been confirmed deleted or was already absent. If deleting a file that
+    exists raises an exception, the row is **not** deleted and the batch stops
+    at that submission, returning the count of submissions successfully
+    completed so far — the same "stop cleanly, report the actual count"
+    behavior already defined below for a mid-batch database error, extended to
+    cover this case. This prevents a submission from ever being reported
+    deleted while its file is orphaned on disk with no remaining row to trace
+    it back to. A file that is already missing is logged and treated as
+    already cleaned up, since there is nothing left to orphan.
 - Deletion never removes the form definition, its data class, or its table.
 - Deletion does not touch contacts, activities, consents, or other data covered
   by Xperience's GDPR "right to be forgotten" flow.
@@ -327,11 +338,12 @@ re-verification, only reproduction in the toolkit's own code and tests.
 - Unauthenticated request: normal platform authentication behavior.
 - Authenticated but unauthorized request: forbidden response; nothing is
   deleted.
-- Partial failure mid-batch (for example, a database error partway through):
-  stop cleanly, log safe diagnostics, and report the actual deleted count
-  rather than the originally requested count. Each row's `Delete()` call is a
-  discrete operation, so a mid-batch failure does not leave a row half
-  deleted.
+- Partial failure mid-batch (for example, a database error partway through, or
+  an uploaded file that exists but cannot be deleted — see Deletion contract's
+  file-cleanup failure contract): stop cleanly, log safe diagnostics, and
+  report the actual deleted count rather than the originally requested count.
+  Each row's `Delete()` call is a discrete operation, so a mid-batch failure
+  does not leave a row half deleted.
 
 ## Performance and consistency
 

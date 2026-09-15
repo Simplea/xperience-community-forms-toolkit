@@ -36,6 +36,7 @@ public static class FormsToolkitServiceCollectionExtensions
         services.TryAddScoped<IFormSubmissionExportPermissionEvaluator, FormSubmissionExportPermissionEvaluator>();
         services.TryAddScoped<IFormSubmissionExportService, FormSubmissionExportService>();
         services.TryAddScoped<IFormCloneService, FormCloneService>();
+        services.TryAddSingleton<IUploadedFilePhysicalStore, UploadedFilePhysicalStore>();
         services.TryAddScoped<IFormSubmissionRemovalService, FormSubmissionRemovalService>();
         return services;
     }
