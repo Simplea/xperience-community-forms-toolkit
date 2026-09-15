@@ -29,7 +29,7 @@ GitHub identity for a short-lived NuGet.org credential immediately before publis
 - Prerelease: `beta.N` while gathering feedback and `rc.N` when preparing a stable
   release.
 
-The next planned release is `1.0.0-beta.5`.
+The next planned release is `1.0.0`, the first stable release.
 
 ## Publishing a release
 
@@ -38,8 +38,8 @@ The next planned release is `1.0.0-beta.5`.
 3. Create and push an annotated tag:
 
    ```powershell
-   git tag -a v1.0.0-beta.5 -m "Release 1.0.0-beta.5"
-   git push origin v1.0.0-beta.5
+   git tag -a v1.0.0 -m "Release 1.0.0"
+   git push origin v1.0.0
    ```
 
 4. Approve the `nuget-release` environment deployment.
