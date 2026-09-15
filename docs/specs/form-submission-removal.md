@@ -137,6 +137,15 @@ the on-screen label is shortened.
   platform's selection is a UI convenience, not a trust boundary.
 - On success, the listing refreshes (via the mass-action result's reload
   behavior) and a toast confirms the number removed.
+- If the shared deletion service stops early (see Deletion contract's
+  file-cleanup failure contract), the command still reloads the listing but
+  adds an error-level response message stating how many of the selected
+  submissions were actually deleted, verified directly in the admin UI as a
+  dismissible error toast ("Only N of M selected submissions could be
+  deleted. An uploaded file could not be removed; check the event log for
+  details.") rather than only a warning-level log entry. Reporting the mass
+  action as unqualified success when it stopped partway would hide the same
+  problem the file-cleanup failure contract exists to surface.
 
 **Compatibility.** Confirm during implementation whether the native selection
 UI is bounded to the current listing page, or whether the platform offers a
