@@ -1,11 +1,17 @@
 # Feature specification: Form submission export
 
-Status: Implemented; prerelease validation in progress. This revision removes
-the originally implemented header dropdown's CSV/Excel/XML quick-export items
-in favor of unifying with **Export selected** (mass action); see Entry point
-and navigation for why.
-Repository: `Simplea/xperience-community-forms-toolkit`  
-Target baseline: Xperience by Kentico `31.2.1`, .NET 8
+Status: Implemented and validated (see `docs/Compatibility.md`'s release
+validation history for the completed packed-artifact, dual-version, and
+admin UI checks). This revision removes the originally implemented header dropdown's
+CSV/Excel/XML quick-export items in favor of unifying with **Export
+selected** (mass action); see Entry point and navigation for why. The
+**Export selected** mass action keeps its shortened on-screen label — see
+its Label note — even after Xperience by Kentico `31.8.0` added its own
+native **Export** action to this listing; see `docs/Compatibility.md`'s
+"Known platform overlaps" for why that was kept as-is rather than changed.
+Repository: `Simplea/xperience-community-forms-toolkit`
+Supported baseline: Xperience by Kentico `30.11.0` or newer; build-verified
+through `31.8.4`; .NET 8
 
 ## Context
 

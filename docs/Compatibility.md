@@ -46,6 +46,40 @@ a public alternative exists. This keeps one toolkit package valid across the
 supported range instead of adding release-specific implementations that can break
 on a refresh.
 
+## Release validation history
+
+The full checklist above (packed artifact, both version boundaries, admin UI,
+every export format, and cloning) was executed end to end on 2026-09-15 for
+toolkit version `1.0.0-beta.4`:
+
+- The packed `XperienceCommunity.FormsToolkit` NuGet package (not a
+  `ProjectReference`) was consumed by a separate, minimal host application at
+  both `30.11.0` and `31.8.4`. Reflecting on the packed assembly confirmed the
+  embedded administration client bundle is present
+  (`AdminResources.xperience_community.forms.toolkit.entry.kxh...js`), which a
+  `ProjectReference` build cannot verify.
+- At `30.11.0`, a from-scratch minimal host needed `AddAuthentication()`,
+  `UseStaticFiles()`/`UseCookiePolicy()`, and `app.Kentico().MapRoutes()` in
+  addition to what the Usage Guide's quick-start snippet shows — none of
+  these are toolkit-specific, but their absence produces confusing failures
+  (`ICompositeViewEngine` resolution errors; a 404 loading the Form Builder
+  iframe) that are easy to mistake for a toolkit or version incompatibility.
+- **Advanced export**, **Advanced delete**, **Export selected**, and
+  **Delete selected** all rendered and functioned correctly at both versions.
+  CSV, Excel, and XML exports were verified with real row-level content
+  (headers and data matched the exported rows exactly) at both versions.
+  **Clone form** was verified at both versions: an independent form ID, zero
+  submissions, and the source's field layout preserved.
+- DancingGoat itself (the repository's own integration site) cannot compile
+  at `30.11.0` — its bundled commerce sample code requires a newer Xperience
+  version, unrelated to this toolkit. This is why minimum-version validation
+  uses a separate, minimal host rather than DancingGoat with packages
+  downgraded.
+
+Separately, `1.0.0-beta.4` is running in a real, external production project
+on `31.1.2` (report only; not independently re-verified as part of this
+history).
+
 ## Updating versions
 
 - Retest and update the latest verified version after every Xperience refresh.
