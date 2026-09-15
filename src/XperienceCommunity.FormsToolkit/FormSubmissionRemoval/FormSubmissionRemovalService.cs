@@ -1,4 +1,3 @@
-using CMS.Base;
 using CMS.DataEngine;
 using CMS.OnlineForms;
 
@@ -19,16 +18,9 @@ public interface IFormSubmissionRemovalService
 
 internal sealed class FormSubmissionRemovalService(
     IFormSubmissionExportService exportService,
+    IUploadedFilePhysicalStore fileStore,
     ILogger<FormSubmissionRemovalService> logger) : IFormSubmissionRemovalService
 {
-    // Xperience by Kentico's documented default storage location for form file uploads,
-    // confirmed against a running instance: <web app physical root>\assets\BizFormFiles.
-    // CMS.IO.File.Delete did not resolve the "~/assets/bizformfiles/" virtual form directly
-    // (it appears to expect an already-resolved path and silently no-ops otherwise), so the
-    // physical path is built explicitly from the web application's physical root instead.
-    private static readonly string bizFormFilesPhysicalFolder =
-        CMS.IO.Path.Combine(SystemContext.WebApplicationPhysicalPath, "assets", "BizFormFiles");
-
     private const int BatchSize = 1000;
 
     public async Task<int> DeleteByIdsAsync(int formId, IReadOnlyList<int> submissionIds, CancellationToken cancellationToken)
@@ -56,7 +48,11 @@ internal sealed class FormSubmissionRemovalService(
             foreach (var item in items)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                DeleteUploadedFiles(item, uploadFieldSourceNames, formId);
+                if (!DeleteUploadedFiles(item, uploadFieldSourceNames, formId))
+                {
+                    return deletedCount;
+                }
+
                 item.Delete();
                 deletedCount++;
             }
@@ -127,7 +123,11 @@ internal sealed class FormSubmissionRemovalService(
                 cancellationToken.ThrowIfCancellationRequested();
                 cursorInserted = item.FormInserted;
                 cursorId = item.ItemID;
-                DeleteUploadedFiles(item, uploadFieldSourceNames, formId);
+                if (!DeleteUploadedFiles(item, uploadFieldSourceNames, formId))
+                {
+                    return deletedCount;
+                }
+
                 item.Delete();
                 deletedCount++;
             }
@@ -141,39 +141,58 @@ internal sealed class FormSubmissionRemovalService(
         return deletedCount;
     }
 
-    private void DeleteUploadedFiles(BizFormItem item, IReadOnlyList<string> uploadFieldSourceNames, int formId)
+    /// <summary>
+    /// Deletes every uploaded file referenced by <paramref name="item"/>. Returns <see langword="false"/>
+    /// without deleting the submission row if any file that exists could not be removed, so a submission
+    /// is never reported as deleted while its uploaded file is orphaned on disk (see docs/specs/
+    /// form-submission-removal.md's Deletion contract). A file that is already missing is logged and
+    /// treated as already cleaned up, since there is nothing left to orphan.
+    /// </summary>
+    private bool DeleteUploadedFiles(BizFormItem item, IReadOnlyList<string> uploadFieldSourceNames, int formId)
     {
         foreach (string sourceName in uploadFieldSourceNames)
         {
             string systemFileName = UploadedFileName.ExtractSystemFileName(item.GetValue(sourceName));
-            if (string.IsNullOrWhiteSpace(systemFileName))
+            if (!TryDeleteUploadedFile(systemFileName, formId, item.ItemID))
             {
-                continue;
+                return false;
             }
+        }
 
-            try
+        return true;
+    }
+
+    internal bool TryDeleteUploadedFile(string systemFileName, int formId, int submissionId)
+    {
+        if (string.IsNullOrWhiteSpace(systemFileName))
+        {
+            return true;
+        }
+
+        try
+        {
+            if (fileStore.Exists(systemFileName))
             {
-                string path = CMS.IO.Path.Combine(bizFormFilesPhysicalFolder, systemFileName);
-                if (CMS.IO.File.Exists(path))
-                {
-                    CMS.IO.File.Delete(path);
-                }
-                else
-                {
-                    logger.LogWarning(
-                        "Uploaded file was not found at the expected path for form {FormId} submission {SubmissionId}.",
-                        formId,
-                        item.ItemID);
-                }
+                fileStore.Delete(systemFileName);
             }
-            catch (Exception exception)
+            else
             {
                 logger.LogWarning(
-                    exception,
-                    "Could not delete an uploaded file for form {FormId} submission {SubmissionId}.",
+                    "Uploaded file was not found at the expected path for form {FormId} submission {SubmissionId}.",
                     formId,
-                    item.ItemID);
+                    submissionId);
             }
+
+            return true;
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(
+                exception,
+                "Could not delete an uploaded file for form {FormId} submission {SubmissionId}. The submission was not deleted.",
+                formId,
+                submissionId);
+            return false;
         }
     }
 

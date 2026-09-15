@@ -119,10 +119,33 @@ public sealed class FormSubmissionRemovalPageExtender(
         IEnumerable<int> identifiers,
         CancellationToken cancellationToken)
     {
+        // Mirrors the validation FormSubmissionRemovalService applies to the same identifiers,
+        // so "requested" and "deleted" are counted on exactly the same set.
+        int requestedCount = (identifiers ?? []).Where(id => id > 0).Distinct().Count();
+
         try
         {
-            await removalService.DeleteByIdsAsync(Page.FormId, identifiers?.ToList() ?? [], cancellationToken);
-            return ResponseFrom(new MassActionResult(reload: true, refetchAll: true));
+            int deletedCount = await removalService.DeleteByIdsAsync(Page.FormId, identifiers?.ToList() ?? [], cancellationToken);
+            var response = ResponseFrom(new MassActionResult(reload: true, refetchAll: true));
+            if (deletedCount < requestedCount)
+            {
+                // The shared deletion service stops the batch the moment a submission's uploaded
+                // file cannot be deleted (see FormSubmissionRemovalService.DeleteUploadedFiles), so
+                // fewer rows than requested may have been removed. Reporting plain success here
+                // would hide that from the administrator; surface it instead of only logging it.
+                logger.LogWarning(
+                    "Quick delete for form {FormId} deleted {DeletedCount} of {RequestedCount} selected submissions; the rest were left in place after a file-cleanup failure.",
+                    Page.FormId,
+                    deletedCount,
+                    requestedCount);
+                response.Messages.Add(new CommandResponseMessage
+                {
+                    Level = CommandResponseMessageLevel.Error,
+                    Message = $"Only {deletedCount} of {requestedCount} selected submissions could be deleted. An uploaded file could not be removed; check the event log for details.",
+                });
+            }
+
+            return response;
         }
         catch (FormSubmissionRemovalValidationException exception)
         {
