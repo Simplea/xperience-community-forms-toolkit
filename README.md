@@ -10,8 +10,8 @@ for form submissions, bulk and filtered submission removal, and a native
 administration action for cloning forms without copying submissions or runtime
 integrations.
 
-The project is developed and maintained by Andres Villenas at SimpleA. APIs and
-behavior may change before the first stable release.
+The project is developed and maintained by Andres Villenas at SimpleA. The
+public API and behavior are considered stable as of `1.0.0`.
 
 ## Requirements
 
@@ -19,9 +19,9 @@ behavior may change before the first stable release.
 
 | Xperience Version | Library Version |
 | ----------------- | --------------- |
-| 30.11.0 or newer  | 1.0.0-beta.4    |
+| 30.11.0 or newer  | 1.0.0           |
 
-The package is build-verified through 31.7.2 and runtime smoke-tested on 31.1.2.
+The package is build-verified through 31.8.4 and runtime smoke-tested on 31.1.2.
 Newer releases may work but require compatibility validation. See the
 [compatibility policy](./docs/Compatibility.md).
 
@@ -35,7 +35,7 @@ Newer releases may work but require compatibility validation. See the
 Add the package to your application using the .NET CLI:
 
 ```powershell
-dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0-beta.4
+dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0
 ```
 
 Register the toolkit and its packaged administration extension:
