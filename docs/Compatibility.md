@@ -7,7 +7,7 @@ version used by the integration site.
 
 - Minimum supported Xperience version: `30.11.0`.
 - Runtime smoke-tested Xperience version: `31.1.2`.
-- Latest build-verified Xperience version: `31.7.2`.
+- Latest build-verified Xperience version: `31.8.4`.
 - Toolkit version introducing this range: `1.0.0-beta.2`.
 
 The NuGet package declares only the minimum version of
@@ -54,3 +54,26 @@ on a refresh.
   or an intentional change to the support window.
 - After a stable Forms Toolkit release, raising the minimum Xperience version is a
   breaking compatibility change and requires a new major toolkit version.
+
+## Known platform overlaps
+
+Xperience by Kentico `31.8.0` added a native **Export** action to the
+Submissions listing's static header toolbar (CSV only, exports the full
+filtered/searched listing regardless of row selection). This coexists with,
+and is independent from, Forms Toolkit's own **Advanced export** header
+action and **Export selected** mass action — verified running against
+`31.8.4` on 2026-09-15.
+
+The native action is rendered from a fixed, `Internal`-namespaced
+`ExportAction` slot on the listing template, separate from the
+`HeaderActions`/`MassActions` collections `PageExtender<FormSubmissionsTab>`
+writes to. It cannot be hidden, moved, or relabeled from this toolkit,
+consistent with the public-API-only policy above.
+
+Net effect for administrators: once a row is selected, two visually distinct
+**Export** controls are on screen at once (native: filled, static header;
+toolkit: text-style, selection-only toolbar, with its own "Export selected
+submissions" hover tooltip that the native action lacks). This was evaluated
+and accepted as-is rather than renaming the toolkit's mass-action labels —
+the failure mode is a redundant CSV download, not data loss, and Delete has
+no equivalent native counterpart.
