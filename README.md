@@ -46,15 +46,20 @@ builder.Services.AddFormsToolkit();
 app.MapControllers();
 ```
 
-Form cloning is enabled by default. To hide the **Clone form** action while keeping
-the submission export features enabled, configure the toolkit during registration:
+Form cloning, submission export, and submission removal are each enabled by
+default. To hide any of them, configure the toolkit during registration:
 
 ```csharp
 builder.Services.AddFormsToolkit(options =>
 {
     options.EnableFormCloning = false;
+    options.EnableFormSubmissionExport = false;
+    options.EnableFormSubmissionRemoval = false;
 });
 ```
+
+Each flag is independent, so you can disable one feature while keeping the
+others enabled.
 
 Grant the **Export form submissions** and/or **Delete form submissions**
 permissions to the appropriate administration roles, then find the corresponding

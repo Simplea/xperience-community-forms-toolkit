@@ -3,6 +3,7 @@ using Kentico.Xperience.Admin.DigitalMarketing.UIPages;
 
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 [assembly: PageExtender(typeof(XperienceCommunity.FormsToolkit.FormSubmissionExport.FormSubmissionsPageExtender))]
 
@@ -14,13 +15,15 @@ public sealed class FormSubmissionsPageExtender(
     IFormSubmissionExportUserAccessor userAccessor,
     IFormSubmissionExportTokenService tokenService,
     IFormSubmissionExportService exportService,
+    IOptions<FormsToolkitOptions> options,
     ILogger<FormSubmissionsPageExtender> logger,
     TimeProvider timeProvider) : PageExtender<FormSubmissionsTab>
 {
     public override async Task ConfigurePage()
     {
-        var permission = await permissionEvaluator.Evaluate(FormSubmissionExportConstants.Permission);
-        if (permission.Succeeded)
+        bool permitted = options.Value.EnableFormSubmissionExport
+            && (await permissionEvaluator.Evaluate(FormSubmissionExportConstants.Permission)).Succeeded;
+        if (permitted)
         {
             try
             {
