@@ -306,7 +306,8 @@ workflow.
 - **From** is optional and inclusive from the beginning of the selected day.
 - **To** is optional and inclusive through the end of the selected day. Implement
   the database predicate as an exclusive start of the following day to avoid
-  precision errors.
+  precision errors. **To** 9999-12-31, the last representable date, has no
+  following day, so it applies no upper bound, the same as leaving **To** empty.
 - Dates are interpreted in the time zone used by the Xperience administration
   application and converted appropriately before filtering `FormInserted`.
 - If **From** is after **To**, do not start the preview or export and show a

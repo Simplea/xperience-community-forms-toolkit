@@ -37,7 +37,9 @@ public static class FormSubmissionExportRangeParser
         }
 
         DateTime? fromUtc = from is null ? null : ToUtc(from.Value, timeZone);
-        DateTime? toExclusiveUtc = to is null ? null : ToUtc(to.Value.AddDays(1), timeZone);
+        // The day after DateOnly.MaxValue cannot be represented. Through the end of the last
+        // representable day includes every submission, so it is the same as no upper bound.
+        DateTime? toExclusiveUtc = to is null || to == DateOnly.MaxValue ? null : ToUtc(to.Value.AddDays(1), timeZone);
 
         return new FormSubmissionExportRange(from, to, fromUtc, toExclusiveUtc);
     }

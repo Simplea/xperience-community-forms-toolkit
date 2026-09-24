@@ -36,6 +36,40 @@ public class FormSubmissionExportOptionsParserTests
         });
     }
 
+    [TestCase("UTC")]
+    [TestCase("America/Bogota")]
+    [TestCase("Pacific/Kiritimati")]
+    public void TreatsTheMaximumToDateAsNoUpperBound(string timeZone)
+    {
+        var result = FormSubmissionExportRangeParser.Parse(CreateRequest(to: "9999-12-31", timeZone: timeZone));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.To, Is.EqualTo(DateOnly.MaxValue));
+            Assert.That(result.ToExclusiveUtc, Is.Null);
+        });
+    }
+
+    [Test]
+    public void KeepsAnExactUpperBoundForTheDayBeforeTheMaximum()
+    {
+        var result = FormSubmissionExportRangeParser.Parse(CreateRequest(to: "9999-12-30", timeZone: "UTC"));
+
+        Assert.That(result.ToExclusiveUtc, Is.EqualTo(new DateTime(9999, 12, 31, 0, 0, 0, DateTimeKind.Utc)));
+    }
+
+    [Test]
+    public void AcceptsTheMaximumDateAsBothFromAndTo()
+    {
+        var result = FormSubmissionExportRangeParser.Parse(CreateRequest(from: "9999-12-31", to: "9999-12-31", timeZone: "UTC"));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.FromUtc, Is.EqualTo(new DateTime(9999, 12, 31, 0, 0, 0, DateTimeKind.Utc)));
+            Assert.That(result.ToExclusiveUtc, Is.Null);
+        });
+    }
+
     [Test]
     public void RejectsReversedRange()
     {
