@@ -137,8 +137,9 @@ ordering options as Advanced export, then:
 1. Select **Preview matching count** to see how many submissions would be removed.
    This is required before deletion is allowed, and is invalidated by any further
    filter change.
-2. Optionally select **Export these first** to capture a copy via Advanced export,
-   prefilled with the same date range, before deleting.
+2. Optionally select **Export these first** to download an Excel copy of exactly
+   the previewed submissions (same date range, record limit, and ordering) before
+   deleting.
 3. Type `DELETE` to confirm, then select **Delete**.
 
 Both delete paths also remove each deleted submission's uploaded files. Deleting a

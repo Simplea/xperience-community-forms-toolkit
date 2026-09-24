@@ -205,19 +205,20 @@ export const FormSubmissionRemovalComponent = ({
 
   const runExportThese = async () => {
     setError(null);
+    if (!validate()) {
+      return;
+    }
+
     setPendingOperation("export");
     setInProgress(true);
     try {
+      // Reuse the delete filters, including the record limit, so the backup matches the deletion set.
       await executeExportToken({
+        ...buildRangeRequest(),
         format: "excel",
         operation: "export",
-        from: toDateOnly(from),
-        to: toDateOnly(to),
-        timeZone,
-        numberOfRecords: null,
         includeHeader: true,
         delimiter: "comma",
-        order,
         columns: null,
       });
     } catch {
