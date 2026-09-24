@@ -72,8 +72,18 @@ When changing files under `src/XperienceCommunity.FormsToolkit/Client/src`, run:
 ```powershell
 cd src/XperienceCommunity.FormsToolkit/Client
 npm ci
+npm run typecheck
+npm test
 npm run build
 ```
+
+`npm test` runs the component tests (`*.test.tsx` next to each component) with
+Vitest and React Testing Library. The Kentico admin packages only run inside the
+Xperience administration, so the tests replace them with the test doubles in
+`Client/test/kentico`: `usePageCommand` returns responses set with
+`mockPageCommand` and records every payload in `pageCommandCalls`, and the admin
+components render plain, labelled HTML. When a component starts using another
+admin export, add a stand-in for it there.
 
 Commit the generated `Client/dist` assets with the source changes. Normal package
 consumers do not need Node.js because the built administration module is embedded

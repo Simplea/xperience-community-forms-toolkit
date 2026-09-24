@@ -49,6 +49,8 @@ for versioning and publishing steps.
    ```powershell
    cd src/XperienceCommunity.FormsToolkit/Client
    npm ci
+   npm run typecheck
+   npm test
    npm run build
    ```
 
