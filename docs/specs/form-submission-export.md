@@ -10,8 +10,8 @@ its Label note — even after Xperience by Kentico `31.8.0` added its own
 native **Export** action to this listing; see `docs/Compatibility.md`'s
 "Known platform overlaps" for why that was kept as-is rather than changed.
 Repository: `Simplea/xperience-community-forms-toolkit`
-Supported baseline: Xperience by Kentico `30.11.0` or newer; build-verified
-through `31.8.4`; .NET 8
+Supported baseline: Xperience by Kentico `30.11.0` or newer; verified through
+`31.9.0`; .NET 8
 
 ## Context
 

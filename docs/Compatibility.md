@@ -6,8 +6,8 @@ version used by the integration site.
 ## Supported range
 
 - Minimum supported Xperience version: `30.11.0`.
-- Runtime smoke-tested Xperience version: `31.1.2`.
-- Latest build-verified Xperience version: `31.8.4`.
+- Latest verified Xperience version: `31.9.0`. The packed package was built and
+  runtime smoke-tested at both `30.11.0` and `31.9.0`; see the validation history.
 - Toolkit version introducing this range: `1.0.0-beta.2`.
 
 The NuGet package declares only the minimum version of
@@ -47,6 +47,35 @@ supported range instead of adding release-specific implementations that can brea
 on a refresh.
 
 ## Release validation history
+
+The full checklist was executed again on 2026-09-24 for toolkit `1.1.0`, using a
+package packed locally from `main` at `9d993d7`, against `30.11.0` and `31.9.0`.
+`31.9.0` was published to NuGet that day and Kentico's changelog did not yet
+describe it, so this verification rests on testing alone.
+
+- Each version ran in a separate host generated from Kentico's own
+  `kentico-xperience-sample-mvc` template at that exact version, with a fresh
+  database. Each host consumed the packed NuGet package (resolved as a package,
+  not a project reference) and registered it exactly as the Usage Guide
+  describes. The packed assembly contained the embedded administration client
+  bundle, and the package declares only `Kentico.Xperience.Admin` `30.11.0` or
+  newer, so the minimum-version host stayed on `30.11.0`.
+- At both versions, with identical results: **Advanced export** in CSV, Excel,
+  and XML with row-level content checks, including spreadsheet formula
+  neutralization and CSV quoting; **Export selected** returning exactly the
+  checked rows; **Delete selected**; **Advanced delete** with a date range,
+  record limit, and preview; and **Clone form**, checked for an independent
+  table, zero submissions, the same field definition, Form Builder layout, and
+  contact mapping, and an unchanged source form (compared by hash). Neither host
+  logged an error.
+- This repository's Dancing Goat site was upgraded to `31.9.0` and the same
+  features were re-checked against its data.
+- Hosts generated from the sample template share the template's fixed
+  `UserSecretsId`, which this repository's Dancing Goat also uses. In
+  Development they therefore read Dancing Goat's connection string instead of
+  their own `appsettings.json`. Remove the `UserSecretsId` from validation hosts
+  before running them. Xperience's startup version check stopped the `30.11.0`
+  host from using the upgraded `31.9.0` database.
 
 The full checklist above (packed artifact, both version boundaries, admin UI,
 every export format, and cloning) was executed end to end on 2026-09-15 for
@@ -96,7 +125,7 @@ Submissions listing's static header toolbar (CSV only, exports the full
 filtered/searched listing regardless of row selection). This coexists with,
 and is independent from, Forms Toolkit's own **Advanced export** header
 action and **Export selected** mass action — verified running against
-`31.8.4` on 2026-09-15.
+`31.8.4` on 2026-09-15 and `31.9.0` on 2026-09-24.
 
 The native action is rendered from a fixed, `Internal`-namespaced
 `ExportAction` slot on the listing template, separate from the
