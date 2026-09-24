@@ -2,8 +2,8 @@
 
 ## Requirements
 
-- Xperience by Kentico 30.11.0 or newer. The package is build-verified through
-  31.7.2 and runtime smoke-tested on 31.1.2. See the
+- Xperience by Kentico 30.11.0 or newer. The package is verified through 31.9.0:
+  built and runtime smoke-tested at both 30.11.0 and 31.9.0. See the
   [compatibility policy](./Compatibility.md).
 - ASP.NET Core 8.0.
 - The administration application must be included in the deployment that hosts

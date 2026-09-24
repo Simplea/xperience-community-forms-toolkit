@@ -1,9 +1,9 @@
 # Feature specification: Form cloning
 
-Status: Implemented and runtime smoke-tested on Xperience by Kentico `31.7.2`
+Status: Implemented and runtime smoke-tested on Xperience by Kentico `30.11.0` and `31.9.0`
 Repository: `Simplea/xperience-community-forms-toolkit`  
-Supported baseline: Xperience by Kentico `30.11.0` or newer; build-verified
-through `31.7.2`; .NET 8
+Supported baseline: Xperience by Kentico `30.11.0` or newer; verified through
+`31.9.0`; .NET 8
 Research date: 2026-08-07
 
 ## Context
