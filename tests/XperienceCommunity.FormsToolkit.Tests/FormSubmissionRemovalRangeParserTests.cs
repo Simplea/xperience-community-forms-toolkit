@@ -88,6 +88,27 @@ public class FormSubmissionRemovalRangeParserTests
         Assert.That(result.SortDirection, Is.EqualTo(expected));
     }
 
+    [Test]
+    public void HasNoUpperSubmissionIdWithoutAPreviewBoundary()
+    {
+        var result = FormSubmissionRemovalRangeParser.Parse(CreateRequest());
+
+        Assert.That(result.UpperSubmissionId, Is.Null);
+    }
+
+    [TestCase(0)]
+    [TestCase(1019)]
+    public void CarriesThePreviewBoundary(int value)
+    {
+        var result = FormSubmissionRemovalRangeParser.Parse(CreateRequest() with { UpperSubmissionId = value });
+
+        Assert.That(result.UpperSubmissionId, Is.EqualTo(value));
+    }
+
+    [Test]
+    public void RejectsANegativePreviewBoundary() => Assert.Throws<FormSubmissionRemovalValidationException>(
+        () => FormSubmissionRemovalRangeParser.Parse(CreateRequest() with { UpperSubmissionId = -1 }));
+
     [TestCase(null)]
     [TestCase("")]
     [TestCase("sideways")]

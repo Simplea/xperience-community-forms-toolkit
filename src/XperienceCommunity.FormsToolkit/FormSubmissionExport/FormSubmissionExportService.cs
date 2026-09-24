@@ -223,13 +223,9 @@ internal sealed class FormSubmissionExportService(
         CancellationToken cancellationToken)
     {
         FormSubmissionExportOptionsParser.ValidateResolved(options, definition.Fields);
-        cancellationToken.ThrowIfCancellationRequested();
-        var upperBoundaryResult = await BizFormItemProvider.GetItems(definition.FormClassName)
-            .Columns(definition.ItemIdColumn)
-            .OrderByDescending(definition.ItemIdColumn)
-            .TopN(1)
-            .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
-        int upperSubmissionId = upperBoundaryResult.FirstOrDefault()?.ItemID ?? 0;
+        int upperSubmissionId = FormSubmissionUpperBoundary.Resolve(
+            await FormSubmissionUpperBoundary.GetCurrentAsync(definition, cancellationToken),
+            options.UpperSubmissionId);
 
         return CreatePreparedExport(definition, options, upperSubmissionId, currentViewSubmissionIds: null);
     }

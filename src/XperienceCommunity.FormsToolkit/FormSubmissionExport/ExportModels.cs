@@ -42,7 +42,14 @@ public sealed record FormSubmissionExportCommandRequest(
     bool? IncludeHeader,
     string? Delimiter,
     string? Order,
-    IReadOnlyList<string>? Columns);
+    IReadOnlyList<string>? Columns)
+{
+    /// <summary>
+    /// Optional highest submission ID to export, such as the boundary an Advanced delete preview
+    /// returned. It can only narrow the export, never widen it.
+    /// </summary>
+    public int? UpperSubmissionId { get; init; }
+}
 
 public sealed record FormSubmissionCurrentViewExportRequest(
     string? Format,
@@ -64,7 +71,14 @@ public sealed record FormSubmissionExportOptions(
     bool IncludeHeader,
     char CsvDelimiter,
     FormSubmissionExportSortDirection SortDirection,
-    IReadOnlyList<string> ColumnIdentifiers);
+    IReadOnlyList<string> ColumnIdentifiers)
+{
+    /// <summary>
+    /// The highest submission ID to export. <see langword="null"/> exports up to the newest submission
+    /// at the time the export runs.
+    /// </summary>
+    public int? UpperSubmissionId { get; init; }
+}
 
 public sealed record FormSubmissionExportTokenPayload(
     int UserId,

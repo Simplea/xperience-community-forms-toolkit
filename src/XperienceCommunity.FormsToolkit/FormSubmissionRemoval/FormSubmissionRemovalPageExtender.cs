@@ -69,9 +69,20 @@ public sealed class FormSubmissionRemovalPageExtender(
     {
         try
         {
+            // The preview fixes the boundary, ignoring any sent by the client. Export these first and
+            // Delete send it back, so neither can reach a submission created after this preview.
             var removalOptions = FormSubmissionRemovalRangeParser.Parse(request);
-            int count = await removalService.CountMatchingAsync(Page.FormId, removalOptions, cancellationToken);
-            return ResponseFrom(new FormSubmissionRemovalPreviewResponse { MatchingCount = count });
+            var definition = await exportService.GetDefinitionAsync(Page.FormId, cancellationToken);
+            int upperSubmissionId = await FormSubmissionUpperBoundary.GetCurrentAsync(definition, cancellationToken);
+            int count = await removalService.CountMatchingAsync(
+                Page.FormId,
+                removalOptions with { UpperSubmissionId = upperSubmissionId },
+                cancellationToken);
+            return ResponseFrom(new FormSubmissionRemovalPreviewResponse
+            {
+                MatchingCount = count,
+                UpperSubmissionId = upperSubmissionId,
+            });
         }
         catch (FormSubmissionRemovalValidationException exception)
         {

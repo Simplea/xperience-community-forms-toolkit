@@ -69,6 +69,11 @@ internal sealed class FormSubmissionRemovalService(
         var query = ApplyRange(BizFormItemProvider.GetItems(definition.FormClassName), options.Range)
             .Columns(definition.ItemIdColumn);
 
+        if (options.UpperSubmissionId is int upperSubmissionId)
+        {
+            query.WhereLessOrEquals(definition.ItemIdColumn, upperSubmissionId);
+        }
+
         if (options.MaximumRecords is int limit)
         {
             var bounded = await query.TopN(limit).GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
@@ -85,12 +90,9 @@ internal sealed class FormSubmissionRemovalService(
         var uploadFieldSourceNames = GetUploadFieldSourceNames(definition);
         string[] columns = [definition.ItemIdColumn, nameof(BizFormItem.FormInserted), .. uploadFieldSourceNames];
 
-        var upperBoundaryResult = await BizFormItemProvider.GetItems(definition.FormClassName)
-            .Columns(definition.ItemIdColumn)
-            .OrderByDescending(definition.ItemIdColumn)
-            .TopN(1)
-            .GetEnumerableTypedResultAsync(cancellationToken: cancellationToken);
-        int upperSubmissionId = upperBoundaryResult.FirstOrDefault()?.ItemID ?? 0;
+        int upperSubmissionId = FormSubmissionUpperBoundary.Resolve(
+            await FormSubmissionUpperBoundary.GetCurrentAsync(definition, cancellationToken),
+            options.UpperSubmissionId);
 
         int deletedCount = 0;
         DateTime? cursorInserted = null;
