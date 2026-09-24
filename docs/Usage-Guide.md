@@ -14,7 +14,7 @@
 Install the toolkit package in the Xperience application:
 
 ```powershell
-dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0
+dotnet add package XperienceCommunity.FormsToolkit --version 1.1.0
 ```
 
 Register the toolkit after registering Xperience services:
@@ -154,7 +154,8 @@ submissions; there is nothing to act on until the form receives its first one.
 
 1. Open **Forms** in the Xperience administration.
 2. Open a form row's actions and select **Clone form**.
-3. Review or change the prefilled form name, then select **Clone**.
+3. Review or change the prefilled form name, then select **Clone**. The name can
+   be up to 200 characters long.
 
 The user must have Xperience's Forms Create permission. The clone receives its own
 code name, data class, database table, and primary key. It copies the supported
