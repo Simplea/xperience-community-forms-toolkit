@@ -11,6 +11,7 @@ import {
 interface ComponentData {
   readonly getDefaultsCommandName: string;
   readonly cloneCommandName: string;
+  readonly maximumDisplayNameLength: number;
 }
 
 interface DefaultsResponse {
@@ -39,6 +40,7 @@ export const FormCloneComponent = ({
   action,
   getDefaultsCommandName,
   cloneCommandName,
+  maximumDisplayNameLength,
   onActionExecuted,
   unloadComponent,
 }: FormCloneComponentProps) => {
@@ -98,10 +100,19 @@ export const FormCloneComponent = ({
     });
   }, [getDefaults, sourceFormId]);
 
+  // Mirrors the server's FormCloneName.Normalize, which trims before measuring.
+  const displayNameTooLong = displayName.trim().length > maximumDisplayNameLength;
+  const displayNameLengthMessage = `Form name must be ${maximumDisplayNameLength} characters or fewer.`;
+
   const submit = async () => {
     const normalizedDisplayName = displayName.trim();
     if (!normalizedDisplayName) {
       setError("Form name is required.");
+      return;
+    }
+
+    if (displayNameTooLong) {
+      setError(displayNameLengthMessage);
       return;
     }
 
@@ -132,7 +143,7 @@ export const FormCloneComponent = ({
         label: "Clone",
         onClick: submit,
         inProgress,
-        disabled: loading || inProgress || !displayName.trim(),
+        disabled: loading || inProgress || !displayName.trim() || displayNameTooLong,
       }}
       cancelAction={{ label: "Cancel", onClick: unloadComponent, disabled: inProgress }}
       notificationBar={error ? <NotificationBarAlert>{error}</NotificationBarAlert> : undefined}
@@ -142,7 +153,8 @@ export const FormCloneComponent = ({
           label="Form name"
           markAsRequired
           value={displayName}
-          maxLength={200}
+          invalid={displayNameTooLong}
+          validationMessage={displayNameTooLong ? displayNameLengthMessage : undefined}
           disabled={loading || inProgress}
           onChange={(event) => setDisplayName(event.currentTarget.value)}
         />

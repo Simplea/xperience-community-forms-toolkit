@@ -24,4 +24,6 @@ internal sealed class FormCloneActionClientProperties : IActionComponentClientPr
     public string GetDefaultsCommandName { get; set; } = FormCloneConstants.GetDefaultsCommand;
 
     public string CloneCommandName { get; set; } = FormCloneConstants.CloneCommand;
+
+    public int MaximumDisplayNameLength { get; init; } = FormCloneConstants.MaximumDisplayNameLength;
 }
