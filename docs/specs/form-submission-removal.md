@@ -197,9 +197,12 @@ Type DELETE to confirm
   Advanced export.
 - Changing any filter after a preview invalidates it; **Delete** is disabled
   until a current preview has been run against the exact filters submitted.
-- **Export these** opens Advanced export prefilled with the same date range, so
-  an administrator can capture a copy before removing it. This is a manual
-  convenience link, not an automatic or required export.
+- **Export these** downloads an Excel file of the exact submissions the current
+  preview counted — the same date range, record limit, and ordering — so an
+  administrator can capture a copy before removing it. This is a manual
+  convenience action, not an automatic or required export. With a record limit
+  and newest-first ordering, a submission that arrives between the export and
+  the delete can enter the deletion set, so export immediately before deleting.
 - **Delete** additionally requires typing an exact confirmation phrase before
   it is enabled. Advanced delete uses this custom confirmation, rather than the
   native mass-action confirmation, because it needs to gate on a current
@@ -417,7 +420,8 @@ re-verification, only reproduction in the toolkit's own code and tests.
 - Advanced delete across open and closed date ranges and record limits,
   including zero matches;
 - confirmation-phrase gating and preview invalidation on filter change;
-- **Export these** opening Advanced export prefilled with the same date range;
+- **Export these** downloading exactly the previewed submissions, including
+  when a record limit is set;
 - uploaded-file cleanup after both quick and Advanced delete;
 - concurrent quick delete, Advanced delete, and the native per-row delete
   against the same form;
