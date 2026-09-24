@@ -35,6 +35,7 @@ interface RangeRequest {
   readonly timeZone: string;
   readonly numberOfRecords: string | null;
   readonly order: RemovalOrder;
+  readonly upperSubmissionId: number | null;
 }
 
 interface ExportTokenRequest {
@@ -48,10 +49,12 @@ interface ExportTokenRequest {
   readonly delimiter: string;
   readonly order: RemovalOrder;
   readonly columns: readonly string[] | null;
+  readonly upperSubmissionId: number | null;
 }
 
 interface PreviewResponse {
   readonly matchingCount?: number;
+  readonly upperSubmissionId?: number;
   readonly error?: string;
 }
 
@@ -80,6 +83,7 @@ export const FormSubmissionRemovalComponent = ({
   const [confirmationPhrase, setConfirmationPhrase] = useState("");
   const [previewCount, setPreviewCount] = useState<number | null>(null);
   const [previewedFilters, setPreviewedFilters] = useState<string | null>(null);
+  const [previewUpperSubmissionId, setPreviewUpperSubmissionId] = useState<number | null>(null);
   const [inProgress, setInProgress] = useState(false);
   const [pendingOperation, setPendingOperation] = useState<PendingOperation>(null);
   const [error, setError] = useState<string | null>(null);
@@ -88,17 +92,21 @@ export const FormSubmissionRemovalComponent = ({
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const currentFiltersKey = JSON.stringify({ from: toDateOnly(from), to: toDateOnly(to), numberOfRecords, order });
 
-  const buildRangeRequest = (): RangeRequest => ({
+  // Export these first and Delete send the boundary the preview returned, so they cannot reach a
+  // submission created after the preview. The preview itself always establishes a fresh boundary.
+  const buildRangeRequest = (upperSubmissionId: number | null = previewUpperSubmissionId): RangeRequest => ({
     from: toDateOnly(from),
     to: toDateOnly(to),
     timeZone,
     numberOfRecords: numberOfRecords || null,
     order,
+    upperSubmissionId,
   });
 
   const invalidatePreview = () => {
     setPreviewCount(null);
     setPreviewedFilters(null);
+    setPreviewUpperSubmissionId(null);
   };
 
   const { execute: executePreview } = usePageCommand<PreviewResponse, RangeRequest>(previewCommandName, {
@@ -110,9 +118,10 @@ export const FormSubmissionRemovalComponent = ({
         return;
       }
 
-      if (typeof response?.matchingCount === "number") {
+      if (typeof response?.matchingCount === "number" && typeof response.upperSubmissionId === "number") {
         setPreviewCount(response.matchingCount);
         setPreviewedFilters(currentFiltersKey);
+        setPreviewUpperSubmissionId(response.upperSubmissionId);
       }
     },
   });
@@ -178,7 +187,7 @@ export const FormSubmissionRemovalComponent = ({
     setPendingOperation("preview");
     setInProgress(true);
     try {
-      await executePreview(buildRangeRequest());
+      await executePreview(buildRangeRequest(null));
     } catch {
       setInProgress(false);
       setPendingOperation(null);
@@ -228,7 +237,8 @@ export const FormSubmissionRemovalComponent = ({
     }
   };
 
-  const previewIsCurrent = previewCount !== null && previewedFilters === currentFiltersKey;
+  const previewIsCurrent =
+    previewCount !== null && previewUpperSubmissionId !== null && previewedFilters === currentFiltersKey;
   const deleteDisabled = inProgress || !previewIsCurrent || confirmationPhrase !== CONFIRMATION_PHRASE;
 
   return (

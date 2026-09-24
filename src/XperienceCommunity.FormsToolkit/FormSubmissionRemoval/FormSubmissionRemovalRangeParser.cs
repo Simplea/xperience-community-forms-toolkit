@@ -12,7 +12,10 @@ public static class FormSubmissionRemovalRangeParser
         int? maximumRecords = ParseMaximumRecords(request.NumberOfRecords);
         var sortDirection = ParseOrder(request.Order);
 
-        return new FormSubmissionRemovalOptions(range, maximumRecords, sortDirection);
+        return new FormSubmissionRemovalOptions(range, maximumRecords, sortDirection)
+        {
+            UpperSubmissionId = ParseUpperSubmissionId(request.UpperSubmissionId),
+        };
     }
 
     private static FormSubmissionRemovalRange ParseRange(FormSubmissionRemovalRangeRequest request)
@@ -91,6 +94,11 @@ public static class FormSubmissionRemovalRangeParser
 
         return result;
     }
+
+    private static int? ParseUpperSubmissionId(int? value) =>
+        value is < 0
+            ? throw new FormSubmissionRemovalValidationException("The preview is invalid. Preview the matching count again.")
+            : value;
 
     private static FormSubmissionRemovalSortDirection ParseOrder(string? value) =>
         value?.Trim().ToLowerInvariant() switch

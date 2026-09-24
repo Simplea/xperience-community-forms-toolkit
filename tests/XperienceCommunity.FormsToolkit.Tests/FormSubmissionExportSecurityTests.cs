@@ -27,6 +27,20 @@ public class FormSubmissionExportSecurityTests
     }
 
     [Test]
+    public void TokenPreservesTheUpperSubmissionId()
+    {
+        var service = new FormSubmissionExportTokenService(new EphemeralDataProtectionProvider());
+        var payload = CreatePayload(userId: 10);
+        string token = service.Create(payload with { Options = payload.Options with { UpperSubmissionId = 1019 } });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(service.TryRead(token, out var read), Is.True);
+            Assert.That(read!.Options.UpperSubmissionId, Is.EqualTo(1019));
+        });
+    }
+
+    [Test]
     public async Task DownloadTokenIsBoundToAuthenticatedAdministrator()
     {
         var tokenService = new FormSubmissionExportTokenService(new EphemeralDataProtectionProvider());

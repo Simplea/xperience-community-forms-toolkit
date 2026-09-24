@@ -80,6 +80,27 @@ public class FormSubmissionExportOptionsParserTests
                 FormSubmissionExportOptionsParser.Parse(CreateRequest(columns: []), fields));
         });
 
+    [TestCase(null)]
+    [TestCase(1019)]
+    public void CarriesTheUpperSubmissionId(int? value)
+    {
+        var result = FormSubmissionExportOptionsParser.Parse(CreateRequest() with { UpperSubmissionId = value }, fields);
+
+        Assert.That(result.UpperSubmissionId, Is.EqualTo(value));
+    }
+
+    [Test]
+    public void RejectsANegativeUpperSubmissionId() =>
+        Assert.Multiple(() =>
+        {
+            Assert.Throws<FormSubmissionExportValidationException>(() =>
+                FormSubmissionExportOptionsParser.Parse(CreateRequest() with { UpperSubmissionId = -1 }, fields));
+
+            var resolved = FormSubmissionExportOptionsParser.Parse(CreateRequest(), fields) with { UpperSubmissionId = -1 };
+            Assert.Throws<FormSubmissionExportValidationException>(() =>
+                FormSubmissionExportOptionsParser.ValidateResolved(resolved, fields));
+        });
+
     [Test]
     public void XmlIgnoresHeaderAndCsvDelimiterOptions()
     {

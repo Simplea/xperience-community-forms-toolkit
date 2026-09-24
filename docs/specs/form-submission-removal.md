@@ -200,9 +200,15 @@ Type DELETE to confirm
 - **Export these** downloads an Excel file of the exact submissions the current
   preview counted — the same date range, record limit, and ordering — so an
   administrator can capture a copy before removing it. This is a manual
-  convenience action, not an automatic or required export. With a record limit
-  and newest-first ordering, a submission that arrives between the export and
-  the delete can enter the deletion set, so export immediately before deleting.
+  convenience action, not an automatic or required export.
+- The preview fixes a boundary: the highest submission ID that existed when it
+  ran. **Export these** and **Delete** send that boundary back, so a submission
+  created after the preview is never exported or deleted by this dialog, even
+  when To is empty or today, or with a record limit and newest-first ordering.
+  The server applies the smaller of the supplied boundary and the current
+  highest submission ID, so a tampered value can only narrow the set. A delete
+  may still remove fewer submissions than previewed if some were deleted in the
+  meantime.
 - **Delete** additionally requires typing an exact confirmation phrase before
   it is enabled. Advanced delete uses this custom confirmation, rather than the
   native mass-action confirmation, because it needs to gate on a current
@@ -366,6 +372,9 @@ re-verification, only reproduction in the toolkit's own code and tests.
 - Quick delete's scope is bounded by whatever the platform's native selection
   UI allows (see Compatibility); the shared deletion service still processes
   it in bounded batches rather than assuming a small set.
+- Advanced delete never reaches a submission created after its preview: the
+  count, the export, and the delete all stop at the preview's highest
+  submission ID (see the dialog notes above).
 - Concurrent operations are safe: deleting an already-deleted submission (for
   example, a race with the native per-row delete or another Advanced delete
   on the same form) is a no-op for that row rather than an error.
@@ -420,6 +429,8 @@ re-verification, only reproduction in the toolkit's own code and tests.
 - Advanced delete across open and closed date ranges and record limits,
   including zero matches;
 - confirmation-phrase gating and preview invalidation on filter change;
+- a submission created between the preview and **Export these** or **Delete**
+  being left out of both, with open and closed date ranges;
 - **Export these** downloading exactly the previewed submissions, including
   when a record limit is set;
 - uploaded-file cleanup after both quick and Advanced delete;

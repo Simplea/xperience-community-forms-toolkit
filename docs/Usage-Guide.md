@@ -136,7 +136,8 @@ ordering options as Advanced export, then:
 
 1. Select **Preview matching count** to see how many submissions would be removed.
    This is required before deletion is allowed, and is invalidated by any further
-   filter change.
+   filter change. Submissions received after the preview are never exported or
+   deleted by this dialog.
 2. Optionally select **Export these first** to download an Excel copy of exactly
    the previewed submissions (same date range, record limit, and ordering) before
    deleting.

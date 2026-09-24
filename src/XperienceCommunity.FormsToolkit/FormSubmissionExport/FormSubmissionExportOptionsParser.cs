@@ -33,7 +33,12 @@ public static class FormSubmissionExportOptionsParser
             includeHeader,
             delimiter,
             sortDirection,
-            columns);
+            columns)
+        {
+            UpperSubmissionId = request.UpperSubmissionId is < 0
+                ? throw new FormSubmissionExportValidationException("The export boundary is invalid.")
+                : request.UpperSubmissionId,
+        };
     }
 
     public static void ValidateResolved(
@@ -60,6 +65,11 @@ public static class FormSubmissionExportOptionsParser
         if (options.EffectiveMaximumRecords != expectedEffectiveMaximum)
         {
             throw new FormSubmissionExportValidationException("The export record limit is invalid.");
+        }
+
+        if (options.UpperSubmissionId is < 0)
+        {
+            throw new FormSubmissionExportValidationException("The export boundary is invalid.");
         }
 
         if (options.Format == FormSubmissionExportFormat.Csv && options.CsvDelimiter is not ',' and not ';')
