@@ -19,7 +19,7 @@ public API and behavior are considered stable as of `1.0.0`.
 
 | Xperience Version | Library Version |
 | ----------------- | --------------- |
-| 30.11.0 or newer  | 1.0.0           |
+| 30.11.0 or newer  | 1.1.0           |
 
 The package is verified through 31.9.0: built and runtime smoke-tested as a packed
 package at both 30.11.0 and 31.9.0.
@@ -36,7 +36,7 @@ Newer releases may work but require compatibility validation. See the
 Add the package to your application using the .NET CLI:
 
 ```powershell
-dotnet add package XperienceCommunity.FormsToolkit --version 1.0.0
+dotnet add package XperienceCommunity.FormsToolkit --version 1.1.0
 ```
 
 Register the toolkit and its packaged administration extension:
