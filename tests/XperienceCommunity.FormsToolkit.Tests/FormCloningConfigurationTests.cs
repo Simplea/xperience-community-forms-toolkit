@@ -36,6 +36,12 @@ public class FormCloningConfigurationTests
     }
 
     [Test]
+    public void CloneClientReceivesTheServerDisplayNameLimit() =>
+        Assert.That(
+            new FormCloneActionClientProperties().MaximumDisplayNameLength,
+            Is.EqualTo(FormCloneConstants.MaximumDisplayNameLength));
+
+    [Test]
     public async Task CloneActionReceivesFormIdFromItsListingRow()
     {
         var action = new ActionConfiguration();

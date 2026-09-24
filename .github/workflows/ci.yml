@@ -54,6 +54,7 @@ jobs:
         working-directory: src/XperienceCommunity.FormsToolkit/Client
         run: |
           npm ci
+          npm run typecheck
           npm run build
 
       - name: Verify generated client assets
